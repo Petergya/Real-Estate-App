@@ -17,9 +17,11 @@ import {
 import toast from 'react-hot-toast';
 import Sheet from './Sheet';
 
+import type { Property } from '../contexts/PropertyContext';
+
 interface PropertyFormProps {
   onClose?: () => void;
-  editProperty?: any;
+  editProperty?: Property;
 }
 
 const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) => {
@@ -225,7 +227,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
       } else {
         navigate('/dashboard');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to save property. Please try again.');
     }
   };

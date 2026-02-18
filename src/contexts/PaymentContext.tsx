@@ -43,13 +43,27 @@ export interface Transaction {
 
 interface PaymentContextType {
   calculatePaymentSplit: (amount: number, currency: 'USD' | 'NGN', hasAgent: boolean, agentCommission?: number) => PaymentSplit;
-  processPayment: (paymentData: any) => Promise<Transaction>;
+  processPayment: (paymentData: PaymentData) => Promise<Transaction>;
   getTransactionHistory: (userId: string) => Transaction[];
   getTransaction: (id: string) => Transaction | undefined;
   exchangeRate: { usdToNgn: number; ngnToUsd: number };
 }
 
 const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
+
+export interface PaymentData {
+  propertyId: string;
+  buyerId: string;
+  amount: {
+    usd: number;
+    ngn: number;
+  };
+  currency: 'USD' | 'NGN';
+  paymentMethod: 'card' | 'bank_transfer' | 'ussd' | 'mobile_money' | 'crypto';
+  split: PaymentSplit;
+  // Additional fields (e.g. contact details, card metadata) are allowed but ignored here
+  [key: string]: unknown;
+}
 
 export const usePayment = () => {
   const context = useContext(PaymentContext);
@@ -105,7 +119,7 @@ export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return split;
   };
 
-  const processPayment = async (paymentData: any): Promise<Transaction> => {
+  const processPayment = async (paymentData: PaymentData): Promise<Transaction> => {
     // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 2000));
 

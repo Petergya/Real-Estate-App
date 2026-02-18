@@ -121,9 +121,16 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (userData: any) => Promise<void>;
+  register: (userData: RegisterInput) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+}
+
+export interface RegisterInput {
+  name: string;
+  email: string;
+  phone?: string;
+  role: User['role'];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -156,6 +163,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
+      // Use password to satisfy lint rules in this mock implementation
+      void password;
       
       const mockUser: User = {
         id: '1',
@@ -170,13 +179,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Note: In a real app, you would store this in localStorage here
       // localStorage.setItem('user', JSON.stringify(mockUser));
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Login failed', error);
       throw new Error('Login failed');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (userData: any) => {
+  const register = async (userData: RegisterInput) => {
     setIsLoading(true);
     try {
       // Simulate API call
@@ -196,6 +207,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Note: In a real app, you would store this in localStorage here
       // localStorage.setItem('user', JSON.stringify(newUser));
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Registration failed', error);
       throw new Error('Registration failed');
     } finally {
       setIsLoading(false);

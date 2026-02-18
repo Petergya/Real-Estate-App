@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProperty } from '../contexts/PropertyContext';
+import type { PropertyFilters } from '../contexts/PropertyContext';
 import { Search, MapPin, DollarSign, Building, Landmark, Store, Home as HomeIcon } from 'lucide-react';
 import SearchFilters from '../components/SearchFilters';
 
@@ -92,7 +93,7 @@ const HomePage: React.FC = () => {
     setCurrentSlide((prev) => (prev + 1) % propertyImages.length);
   };
 
-  const handleSearch = (filters: any) => {
+  const handleSearch = (filters: PropertyFilters) => {
     searchProperties(filters);
     navigate('/properties');
   };

@@ -278,30 +278,19 @@
 
 import React, { useState, useMemo } from 'react';
 import { useProperty } from '../contexts/PropertyContext';
+import type { PropertyFilters } from '../contexts/PropertyContext';
 import MapView from '../components/MapView';
 import SearchFilters from '../components/SearchFilters';
 import { Property } from '../contexts/PropertyContext';
 import { List, Map, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-interface Filters {
-  search?: string;
-  type?: string;
-  status?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  bedrooms?: string;
-  location?: string;
-  furnished?: string;
-  amenities?: string[];
-}
-
 const PropertiesMap: React.FC = () => {
   const { properties } = useProperty();
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<Filters>({});
+  const [filters, setFilters] = useState<PropertyFilters>({ amenities: [] });
 
   // Create a handler function with the correct type signature
   const handlePropertySelect = (property: Property) => {
@@ -334,7 +323,7 @@ const PropertiesMap: React.FC = () => {
     });
   }, [properties, filters]);
 
-  const handleSearch = (newFilters: Filters) => {
+  const handleSearch = (newFilters: PropertyFilters) => {
     setFilters(newFilters);
   };
 
@@ -414,9 +403,9 @@ const PropertiesMap: React.FC = () => {
           <div className={`${viewMode === 'map' ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
             {viewMode === 'map' ? (
               <MapView
-                properties={filteredProperties as any}
-                selectedProperty={selectedProperty as any}
-                onPropertySelect={handlePropertySelect as any}
+                properties={filteredProperties}
+                selectedProperty={selectedProperty}
+                onPropertySelect={handlePropertySelect}
                 center={mapCenter}
                 height="600px"
               />

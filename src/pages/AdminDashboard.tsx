@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProperty } from '../contexts/PropertyContext';
-import { usePayment } from '../contexts/PaymentContext';
 import { 
   Users, 
   Home, 
@@ -13,13 +12,12 @@ import {
   CheckCircle,
   XCircle,
   Eye,
-  Edit,
   Trash2
 } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { properties, updateProperty, deleteProperty } = useProperty();
+  const { properties, deleteProperty } = useProperty();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Mock admin check - in real app, this would be properly validated

@@ -9,7 +9,6 @@ import {
   DollarSign, 
   Shield, 
   CheckCircle, 
-  AlertCircle,
   ArrowLeft,
   Users,
   Percent

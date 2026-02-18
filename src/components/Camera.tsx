@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Camera as CameraIcon, RotateCcw, Download, X } from 'lucide-react';
 
 interface CameraProps {
@@ -18,18 +18,7 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
   const [showCameraSelector, setShowCameraSelector] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
 
-  useEffect(() => {
-    getAvailableCameras();
-    // Auto-start camera when component mounts
-    setTimeout(() => {
-      startCamera();
-    }, 500);
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
-  const getAvailableCameras = async () => {
+  const getAvailableCameras = useCallback(async () => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
@@ -42,9 +31,9 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
     } catch (err) {
       console.error('Error getting cameras:', err);
     }
-  };
+  }, []);
 
-  const startCamera = async () => {
+  const startCamera = useCallback(async () => {
     try {
       console.log('Starting computer camera...');
       
@@ -79,7 +68,7 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
       console.error('Computer camera access error:', err);
       setError('Unable to access computer camera. Please check permissions and ensure camera is available.');
     }
-  };
+  }, [availableCameras.length, selectedCamera]);
 
   // Connect stream to video element when stream changes
   useEffect(() => {
@@ -103,13 +92,25 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
     }
   }, [stream]);
 
-  const stopCamera = () => {
+  const stopCamera = useCallback(() => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
       setIsCameraActive(false);
     }
-  };
+  }, [stream]);
+
+  useEffect(() => {
+    getAvailableCameras();
+    // Auto-start camera when component mounts
+    const timer = setTimeout(() => {
+      void startCamera();
+    }, 500);
+    return () => {
+      clearTimeout(timer);
+      stopCamera();
+    };
+  }, [getAvailableCameras, startCamera, stopCamera]);
 
   const capturePhoto = () => {
     console.log('Capture photo clicked');

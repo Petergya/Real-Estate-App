@@ -438,9 +438,27 @@ export interface Property {
   updatedAt: string;
 }
 
+export interface PropertyFilters {
+  search?: string;
+  location?: string;
+  city?: string;
+  type?: string;
+  status?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  bedrooms?: string;
+  bathrooms?: string;
+  minArea?: string;
+  maxArea?: string;
+  furnished?: string;
+  petFriendly?: string;
+  parking?: string;
+  amenities?: string[];
+}
+
 interface PropertyContextType {
   properties: Property[];
-  searchProperties: (filters: any) => Property[];
+  searchProperties: (filters: PropertyFilters) => Property[];
   getProperty: (id: string) => Property | undefined;
   addProperty: (property: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateProperty: (id: string, updates: Partial<Property>) => void;
@@ -727,7 +745,7 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [properties, setProperties] = useState<Property[]>(mockProperties);
   const [isLoading, setIsLoading] = useState(false);
 
-  const searchProperties = (filters: any) => {
+  const searchProperties = (filters: PropertyFilters) => {
     return properties.filter(property => {
       if (filters.type && property.type !== filters.type) return false;
       if (filters.status && property.status !== filters.status) return false;

@@ -6,13 +6,10 @@ import {
   Home, 
   DollarSign, 
   TrendingUp, 
-  Users, 
   Plus, 
   Eye, 
-  Edit, 
-  Trash2,
+  Edit,
   MapPin,
-  Calendar,
   CreditCard
 } from 'lucide-react';
 import { Link } from 'react-router-dom';

@@ -189,7 +189,7 @@ const MapView: React.FC<MapViewProps> = ({
         selectedProperty.location.coordinates.lng
       ], zoom);
     }
-  }, [properties, userLocation, selectedProperty]);
+  }, [properties, userLocation, selectedProperty, zoom]);
 
   // Handle get directions from popup
   useEffect(() => {

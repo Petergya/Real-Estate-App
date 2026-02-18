@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { User, Mail, Phone, Shield, Camera, Save, Edit } from 'lucide-react';
 
 const Profile: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, Video, FileText, Upload, Image, File, Plus } from 'lucide-react';
+import { Camera, Video, FileText, File, Plus } from 'lucide-react';
 import Sheet from '../components/Sheet';
 import CameraComponent from '../components/Camera';
 import VideoRecorder from '../components/VideoRecorder';

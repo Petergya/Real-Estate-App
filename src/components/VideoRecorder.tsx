@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Video, Square, Play, Pause, RotateCcw, Download, X } from 'lucide-react';
 
 interface VideoRecorderProps {
@@ -20,18 +20,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
   const [showCameraSelector, setShowCameraSelector] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
 
-  useEffect(() => {
-    getAvailableCameras();
-    // Auto-start camera when component mounts
-    setTimeout(() => {
-      startCamera();
-    }, 500);
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
-  const getAvailableCameras = async () => {
+  const getAvailableCameras = useCallback(async () => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
@@ -44,21 +33,23 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
     } catch (err) {
       console.error('Error getting cameras:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    let interval: number;
+    let interval: number | undefined;
     if (isRecording) {
-      interval = setInterval(() => {
+      interval = window.setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
     }
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval !== undefined) {
+        window.clearInterval(interval);
+      }
     };
   }, [isRecording]);
 
-  const startCamera = async () => {
+  const startCamera = useCallback(async () => {
     try {
       // Check if we're on a mobile device
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -81,8 +72,8 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
           setIsCameraActive(true);
           setError(null);
           return;
-        } catch (backCameraError) {
-          console.log('Back camera not available, trying front camera');
+        } catch {
+          // Back camera not available, try front/default camera
         }
       }
       
@@ -112,9 +103,10 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
       setError(null);
     } catch (err) {
       setError('Unable to access camera. Please check permissions and ensure camera is available.');
+      // eslint-disable-next-line no-console
       console.error('Camera access error:', err);
     }
-  };
+  }, [availableCameras.length, selectedCamera]);
 
   // Connect stream to video element when stream changes
   useEffect(() => {
@@ -123,12 +115,24 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
     }
   }, [stream]);
 
-  const stopCamera = () => {
+  const stopCamera = useCallback(() => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
     }
-  };
+  }, [stream]);
+
+  useEffect(() => {
+    getAvailableCameras();
+    // Auto-start camera when component mounts
+    const timer = setTimeout(() => {
+      void startCamera();
+    }, 500);
+    return () => {
+      clearTimeout(timer);
+      stopCamera();
+    };
+  }, [getAvailableCameras, startCamera, stopCamera]);
 
   const startRecording = () => {
     if (stream && videoRef.current) {

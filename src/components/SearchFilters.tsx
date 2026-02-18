@@ -1,31 +1,32 @@
 import React, { useState } from 'react';
 import { Search, Filter, MapPin, DollarSign, Bed, Bath, Square, X, Home } from 'lucide-react';
+import type { PropertyFilters } from '../contexts/PropertyContext';
 
 interface SearchFiltersProps {
-  onSearch: (filters: any) => void;
-  initialFilters?: any;
+  onSearch: (filters: PropertyFilters) => void;
+  initialFilters?: PropertyFilters;
 }
 
-const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch, initialFilters = {} }) => {
-  const [filters, setFilters] = useState({
-    search: initialFilters.search || '',
-    location: initialFilters.location || '',
-    type: initialFilters.type || '',
-    status: initialFilters.status || '',
-    minPrice: initialFilters.minPrice || '',
-    maxPrice: initialFilters.maxPrice || '',
-    bedrooms: initialFilters.bedrooms || '',
-    bathrooms: initialFilters.bathrooms || '',
-    minArea: initialFilters.minArea || '',
-    maxArea: initialFilters.maxArea || '',
-    furnished: initialFilters.furnished || '',
-    petFriendly: initialFilters.petFriendly || '',
-    parking: initialFilters.parking || '',
-    amenities: initialFilters.amenities || []
+const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch, initialFilters }) => {
+  const [filters, setFilters] = useState<PropertyFilters>({
+    search: initialFilters?.search || '',
+    location: initialFilters?.location || '',
+    type: initialFilters?.type || '',
+    status: initialFilters?.status || '',
+    minPrice: initialFilters?.minPrice || '',
+    maxPrice: initialFilters?.maxPrice || '',
+    bedrooms: initialFilters?.bedrooms || '',
+    bathrooms: initialFilters?.bathrooms || '',
+    minArea: initialFilters?.minArea || '',
+    maxArea: initialFilters?.maxArea || '',
+    furnished: initialFilters?.furnished || '',
+    petFriendly: initialFilters?.petFriendly || '',
+    parking: initialFilters?.parking || '',
+    amenities: initialFilters?.amenities || []
   });
 
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialFilters.amenities || []);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialFilters?.amenities || []);
 
   const amenityOptions = [
     'Swimming Pool', 'Gym', '24/7 Security', 'Generator', 'Elevator',
@@ -202,7 +203,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch, initialFilters 
             <h4 className="text-sm font-medium text-white mb-3">Property Details</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm text-gray-200 mb-1 flex items-center gap-1">
+                <label className="text-sm text-gray-200 mb-1 flex items-center gap-1">
                   <Home className="h-4 w-4 mr-1 text-blue-300" />
                   Property Type
                 </label>

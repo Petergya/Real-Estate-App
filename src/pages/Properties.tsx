@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProperty } from '../contexts/PropertyContext';
-import { Search, Filter, MapPin, DollarSign, Bed, Bath, Square, Map } from 'lucide-react';
+import type { PropertyFilters } from '../contexts/PropertyContext';
+import { MapPin, DollarSign, Bed, Bath, Square, Map } from 'lucide-react';
 import SearchFilters from '../components/SearchFilters';
 
 const Properties: React.FC = () => {
   const { properties } = useProperty();
-  const [filters, setFilters] = useState({});
-  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<PropertyFilters>({ amenities: [] });
 
   const filteredProperties = useMemo(() => {
     return properties.filter(property => {
@@ -32,7 +32,7 @@ const Properties: React.FC = () => {
     });
   }, [properties, filters]);
 
-  const handleSearch = (newFilters: any) => {
+  const handleSearch = (newFilters: PropertyFilters) => {
     setFilters(newFilters);
   };
 

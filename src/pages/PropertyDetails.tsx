@@ -59,7 +59,7 @@ const PropertyDetails: React.FC = () => {
     );
   };
 
-  const amenityIcons: { [key: string]: any } = {
+  const amenityIcons: Record<string, string> = {
     'Swimming Pool': '🏊‍♂️',
     'Gym': '💪',
     '24/7 Security': '🛡️',
