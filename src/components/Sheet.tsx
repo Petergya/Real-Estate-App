@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Camera, Video, FileText, Upload, Image, File } from 'lucide-react';
+import VideoRecorder from './VideoRecorder';
 
 interface SheetProps {
   isOpen: boolean;
