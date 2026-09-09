@@ -8,36 +8,40 @@ const AddProperty: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (!user) {
+  if (!user || user.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-light flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-          <p className="text-gray-600 mb-4">Please log in to add a property</p>
-          <button
-            onClick={() => navigate('/login')}
-            className="text-blue-600 hover:text-blue-700"
-          >
-            Go to Login
-          </button>
+          <h2 className="text-2xl font-bold text-ink mb-4">Access Denied</h2>
+          <p className="text-gray-600 mb-2">
+            Only admins can add or upload properties.
+          </p>
+          {!user && (
+            <button
+              onClick={() => navigate('/login')}
+              className="text-gold hover:text-secondary"
+            >
+              Go to Login
+            </button>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-light py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/dashboard')}
-            className="flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4"
+            className="flex items-center text-gold hover:text-secondary transition-colors mb-4"
           >
             <ArrowLeft className="h-5 w-5 mr-1" />
             Back to Dashboard
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Add New Property</h1>
+          <h1 className="text-3xl font-bold text-ink">Add New Property</h1>
           <p className="text-gray-600 mt-2">
             List your property and reach thousands of potential buyers and renters
           </p>

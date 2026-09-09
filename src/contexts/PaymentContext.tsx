@@ -34,7 +34,7 @@ export interface Transaction {
   };
   currency: 'USD' | 'NGN';
   paymentMethod: 'card' | 'bank_transfer' | 'ussd' | 'mobile_money' | 'crypto';
-  split: PaymentSplit;
+  split?: PaymentSplit;
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
   escrowStatus: 'held' | 'released' | 'disputed';
   createdAt: string;
@@ -45,6 +45,7 @@ interface PaymentContextType {
   calculatePaymentSplit: (amount: number, currency: 'USD' | 'NGN', hasAgent: boolean, agentCommission?: number) => PaymentSplit;
   processPayment: (paymentData: PaymentData) => Promise<Transaction>;
   getTransactionHistory: (userId: string) => Transaction[];
+  getAllTransactions: () => Transaction[];
   getTransaction: (id: string) => Transaction | undefined;
   exchangeRate: { usdToNgn: number; ngnToUsd: number };
 }
@@ -60,7 +61,7 @@ export interface PaymentData {
   };
   currency: 'USD' | 'NGN';
   paymentMethod: 'card' | 'bank_transfer' | 'ussd' | 'mobile_money' | 'crypto';
-  split: PaymentSplit;
+  split?: PaymentSplit;
   // Additional fields (e.g. contact details, card metadata) are allowed but ignored here
   [key: string]: unknown;
 }
@@ -145,6 +146,10 @@ export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return transactions.filter(transaction => transaction.buyerId === userId);
   };
 
+  const getAllTransactions = () => {
+    return [...transactions];
+  };
+
   const getTransaction = (id: string) => {
     return transactions.find(transaction => transaction.id === id);
   };
@@ -154,6 +159,7 @@ export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       calculatePaymentSplit,
       processPayment,
       getTransactionHistory,
+      getAllTransactions,
       getTransaction,
       exchangeRate
     }}>

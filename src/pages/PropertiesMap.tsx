@@ -58,13 +58,13 @@
 //   }, [filteredProperties]);
 
 //   return (
-//     <div className="min-h-screen bg-gray-50">
+//     <div className="min-h-screen bg-light">
 //       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 //         {/* Header */}
 //         <div className="mb-6">
 //           <div className="flex items-center justify-between">
 //             <div>
-//               <h1 className="text-3xl font-bold text-gray-900">Property Map</h1>
+//               <h1 className="text-3xl font-bold text-ink">Property Map</h1>
 //               <p className="text-gray-600 mt-2">
 //                 Explore {filteredProperties.length} properties on the map
 //               </p>
@@ -77,8 +77,8 @@
 //                   onClick={() => setViewMode('map')}
 //                   className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 //                     viewMode === 'map'
-//                       ? 'bg-white text-gray-900 shadow-sm'
-//                       : 'text-gray-600 hover:text-gray-900'
+//                       ? 'bg-white text-ink shadow-sm'
+//                       : 'text-gray-600 hover:text-ink'
 //                   }`}
 //                 >
 //                   <Map className="h-4 w-4 mr-2" />
@@ -88,8 +88,8 @@
 //                   onClick={() => setViewMode('list')}
 //                   className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
 //                     viewMode === 'list'
-//                       ? 'bg-white text-gray-900 shadow-sm'
-//                       : 'text-gray-600 hover:text-gray-900'
+//                       ? 'bg-white text-ink shadow-sm'
+//                       : 'text-gray-600 hover:text-ink'
 //                   }`}
 //                 >
 //                   <List className="h-4 w-4 mr-2" />
@@ -144,7 +144,7 @@
 //                       <div className="flex-1 p-4">
 //                         <div className="flex items-start justify-between">
 //                           <div className="flex-1">
-//                             <h3 className="text-lg font-semibold text-gray-900 mb-2">
+//                             <h3 className="text-lg font-semibold text-ink mb-2">
 //                               {property.title}
 //                             </h3>
 //                             <p className="text-gray-600 mb-2">{property.location.address}</p>
@@ -160,8 +160,8 @@
 //                             <div className="flex items-center space-x-2">
 //                               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
 //                                 property.status === 'for-sale'
-//                                   ? 'bg-green-100 text-green-800'
-//                                   : 'bg-blue-100 text-blue-800'
+//                                   ? 'bg-gold/15 text-navy'
+//                                   : 'bg-gold/15 text-navy'
 //                               }`}>
 //                                 {property.status === 'for-sale' ? 'For Sale' : 'For Rent'}
 //                               </span>
@@ -171,7 +171,7 @@
 //                             </div>
 //                           </div>
 //                           <div className="text-right ml-4">
-//                             <div className="text-xl font-bold text-gray-900">
+//                             <div className="text-xl font-bold text-gold">
 //                               ${property.price.usd.toLocaleString()}
 //                             </div>
 //                             <div className="text-sm text-gray-500">
@@ -179,7 +179,7 @@
 //                             </div>
 //                             <Link
 //                               to={`/property/${property.id}`}
-//                               className="mt-2 inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm"
+//                               className="mt-2 inline-block bg-navy text-white px-4 py-2 rounded-md hover:bg-secondary transition-colors text-sm"
 //                             >
 //                               View Details
 //                             </Link>
@@ -193,7 +193,7 @@
 //                 {filteredProperties.length === 0 && (
 //                   <div className="text-center py-12">
 //                     <Map className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-//                     <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
+//                     <h3 className="text-lg font-medium text-ink mb-2">No properties found</h3>
 //                     <p className="text-gray-600">Try adjusting your search filters</p>
 //                   </div>
 //                 )}
@@ -212,19 +212,19 @@
 //                     className="w-full h-48 object-cover"
 //                   />
 //                   <div className="p-4">
-//                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
+//                     <h3 className="text-lg font-semibold text-ink mb-2">
 //                       {selectedProperty.title}
 //                     </h3>
 //                     <p className="text-gray-600 mb-3">{selectedProperty.location.address}</p>
                     
 //                     <div className="flex items-center justify-between mb-3">
-//                       <div className="text-xl font-bold text-gray-900">
+//                       <div className="text-xl font-bold text-gold">
 //                         ${selectedProperty.price.usd.toLocaleString()}
 //                       </div>
 //                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
 //                         selectedProperty.status === 'for-sale'
-//                           ? 'bg-green-100 text-green-800'
-//                           : 'bg-blue-100 text-blue-800'
+//                           ? 'bg-gold/15 text-navy'
+//                           : 'bg-gold/15 text-navy'
 //                       }`}>
 //                         {selectedProperty.status === 'for-sale' ? 'For Sale' : 'For Rent'}
 //                       </span>
@@ -245,7 +245,7 @@
 //                     <div className="space-y-2">
 //                       <Link
 //                         to={`/property/${selectedProperty.id}`}
-//                         className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-center block"
+//                         className="w-full bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary transition-colors text-center block"
 //                       >
 //                         View Full Details
 //                       </Link>
@@ -261,7 +261,7 @@
 //               ) : (
 //                 <div className="bg-white rounded-lg shadow-md p-6 text-center">
 //                   <Map className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-//                   <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Property</h3>
+//                   <h3 className="text-lg font-medium text-ink mb-2">Select a Property</h3>
 //                   <p className="text-gray-600">Click on a map marker to view property details</p>
 //                 </div>
 //               )}
@@ -329,7 +329,7 @@ const PropertiesMap: React.FC = () => {
 
   const mapCenter = useMemo(() => {
     if (filteredProperties.length === 0) {
-      return { lat: 6.5244, lng: 3.3792 }; // Lagos, Nigeria
+      return { lat: 9.8965, lng: 8.8583 }; // Jos, Nigeria
     }
     
     const avgLat = filteredProperties.reduce((sum, p) => sum + p.location.coordinates.lat, 0) / filteredProperties.length;
@@ -339,13 +339,13 @@ const PropertiesMap: React.FC = () => {
   }, [filteredProperties]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-light">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Property Map</h1>
+              <h1 className="text-3xl font-bold text-ink">Property Map</h1>
               <p className="text-gray-600 mt-2">
                 Explore {filteredProperties.length} properties on the map
               </p>
@@ -358,8 +358,8 @@ const PropertiesMap: React.FC = () => {
                   onClick={() => setViewMode('map')}
                   className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'map'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white text-ink shadow-sm'
+                      : 'text-gray-600 hover:text-ink'
                   }`}
                 >
                   <Map className="h-4 w-4 mr-2" />
@@ -369,8 +369,8 @@ const PropertiesMap: React.FC = () => {
                   onClick={() => setViewMode('list')}
                   className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'list'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white text-ink shadow-sm'
+                      : 'text-gray-600 hover:text-ink'
                   }`}
                 >
                   <List className="h-4 w-4 mr-2" />
@@ -425,7 +425,7 @@ const PropertiesMap: React.FC = () => {
                       <div className="flex-1 p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            <h3 className="text-lg font-semibold text-ink mb-2">
                               {property.title}
                             </h3>
                             <p className="text-gray-600 mb-2">{property.location.address}</p>
@@ -439,20 +439,31 @@ const PropertiesMap: React.FC = () => {
                               <span>{property.features.area} sqm</span>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                property.status === 'for-sale'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}>
-                                {property.status === 'for-sale' ? 'For Sale' : 'For Rent'}
-                              </span>
+                              <div className="flex flex-col gap-2">
+                                <span className={`px-2 py-1 text-xs font-medium rounded-full w-fit ${
+                                  property.status === 'for-sale'
+                                    ? 'bg-navy text-white'
+                                    : 'bg-gold/15 text-navy'
+                                }`}>
+                                  {property.status === 'for-sale' ? 'For Sale' : 'For Rent'}
+                                </span>
+                                {property.availabilityStatus !== 'available' && (
+                                  <span className={`px-2 py-1 text-xs font-medium rounded-full w-fit shadow-sm ${
+                                    property.availabilityStatus === 'sold'
+                                      ? 'bg-red-500 text-white'
+                                      : 'bg-amber-500 text-white'
+                                  }`}>
+                                    {property.availabilityStatus === 'sold' ? 'Sold' : 'Taken'}
+                                  </span>
+                                )}
+                              </div>
                               <span className="text-xs text-gray-500 capitalize">
                                 {property.type}
                               </span>
                             </div>
                           </div>
                           <div className="text-right ml-4">
-                            <div className="text-xl font-bold text-gray-900">
+                            <div className="text-xl font-bold text-gold">
                               ${property.price.usd.toLocaleString()}
                             </div>
                             <div className="text-sm text-gray-500">
@@ -460,7 +471,7 @@ const PropertiesMap: React.FC = () => {
                             </div>
                             <Link
                               to={`/property/${property.id}`}
-                              className="mt-2 inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm"
+                              className="mt-2 inline-block bg-navy text-white px-4 py-2 rounded-md hover:bg-secondary transition-colors text-sm"
                             >
                               View Details
                             </Link>
@@ -474,7 +485,7 @@ const PropertiesMap: React.FC = () => {
                 {filteredProperties.length === 0 && (
                   <div className="text-center py-12">
                     <Map className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
+                    <h3 className="text-lg font-medium text-ink mb-2">No properties found</h3>
                     <p className="text-gray-600">Try adjusting your search filters</p>
                   </div>
                 )}
@@ -493,22 +504,33 @@ const PropertiesMap: React.FC = () => {
                     className="w-full h-48 object-cover"
                   />
                   <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-ink mb-2">
                       {selectedProperty.title}
                     </h3>
                     <p className="text-gray-600 mb-3">{selectedProperty.location.address}</p>
                     
                     <div className="flex items-center justify-between mb-3">
-                      <div className="text-xl font-bold text-gray-900">
+                      <div className="text-xl font-bold text-gold">
                         ${selectedProperty.price.usd.toLocaleString()}
                       </div>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        selectedProperty.status === 'for-sale'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {selectedProperty.status === 'for-sale' ? 'For Sale' : 'For Rent'}
-                      </span>
+                      <div className="flex flex-col gap-2 items-end">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          selectedProperty.status === 'for-sale'
+                            ? 'bg-navy text-white'
+                            : 'bg-gold/15 text-navy'
+                        }`}>
+                          {selectedProperty.status === 'for-sale' ? 'For Sale' : 'For Rent'}
+                        </span>
+                        {selectedProperty.availabilityStatus !== 'available' && (
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full shadow-sm ${
+                            selectedProperty.availabilityStatus === 'sold'
+                              ? 'bg-red-500 text-white'
+                              : 'bg-amber-500 text-white'
+                          }`}>
+                            {selectedProperty.availabilityStatus === 'sold' ? 'Sold' : 'Taken'}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {selectedProperty.features.bedrooms && (
@@ -526,7 +548,7 @@ const PropertiesMap: React.FC = () => {
                     <div className="space-y-2">
                       <Link
                         to={`/property/${selectedProperty.id}`}
-                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-center block"
+                        className="w-full bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary transition-colors text-center block"
                       >
                         View Full Details
                       </Link>
@@ -542,7 +564,7 @@ const PropertiesMap: React.FC = () => {
               ) : (
                 <div className="bg-white rounded-lg shadow-md p-6 text-center">
                   <Map className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Property</h3>
+                  <h3 className="text-lg font-medium text-ink mb-2">Select a Property</h3>
                   <p className="text-gray-600">Click on a map marker to view property details</p>
                 </div>
               )}

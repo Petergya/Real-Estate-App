@@ -37,10 +37,10 @@ const MediaDemo: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-light py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Media Features Demo</h1>
+          <h1 className="text-3xl font-bold text-ink mb-6">Media Features Demo</h1>
           <p className="text-gray-600 mb-8">
             This page demonstrates the camera, video recording, and file upload capabilities of the app.
           </p>
@@ -49,7 +49,7 @@ const MediaDemo: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <button
               onClick={() => setShowCamera(true)}
-              className="flex items-center justify-center p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center justify-center p-4 bg-navy text-white rounded-lg hover:bg-secondary transition-colors"
             >
               <Camera className="h-6 w-6 mr-2" />
               Take Photo
@@ -57,7 +57,7 @@ const MediaDemo: React.FC = () => {
             
             <button
               onClick={() => setShowVideoRecorder(true)}
-              className="flex items-center justify-center p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center justify-center p-4 bg-navy text-white rounded-lg hover:bg-secondary transition-colors"
             >
               <Video className="h-6 w-6 mr-2" />
               Record Video
@@ -75,7 +75,7 @@ const MediaDemo: React.FC = () => {
           {/* Media Gallery */}
           {mediaItems.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Captured Media</h2>
+              <h2 className="text-xl font-semibold text-ink mb-4">Captured Media</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {mediaItems.map((item, index) => (
                   <div key={index} className="bg-gray-100 rounded-lg p-4">
@@ -118,9 +118,9 @@ const MediaDemo: React.FC = () => {
 
           {/* Feature Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">Camera Features</h3>
-              <ul className="text-sm text-blue-800 space-y-1">
+            <div className="bg-light/40 p-4 rounded-lg">
+              <h3 className="font-semibold text-accent mb-2">Camera Features</h3>
+              <ul className="text-sm text-primary space-y-1">
                 <li>• Real-time camera access</li>
                 <li>• Photo capture with preview</li>
                 <li>• Download captured photos</li>
@@ -128,9 +128,9 @@ const MediaDemo: React.FC = () => {
               </ul>
             </div>
             
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-green-900 mb-2">Video Features</h3>
-              <ul className="text-sm text-green-800 space-y-1">
+            <div className="bg-gold/10 p-4 rounded-lg">
+              <h3 className="font-semibold text-navy mb-2">Video Features</h3>
+              <ul className="text-sm text-navy space-y-1">
                 <li>• Video recording with audio</li>
                 <li>• Recording timer display</li>
                 <li>• Play/pause controls</li>

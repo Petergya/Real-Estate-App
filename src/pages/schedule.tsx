@@ -50,7 +50,7 @@
 //     <div className="relative">
 //       <button
 //         onClick={() => setIsOpen(!isOpen)}
-//         className="w-full border border-blue-600 text-blue-600 py-3 px-4 rounded-md hover:bg-blue-50 transition-colors font-medium flex items-center justify-center gap-2"
+//         className="w-full border border-green-600 text-gold py-3 px-4 rounded-md hover:bg-gold/10 transition-colors font-medium flex items-center justify-center gap-2"
 //       >
 //         <Calendar size={18} />
 //         Schedule Viewing
@@ -75,7 +75,7 @@
 //                     onChange={(e) => setDate(e.target.value)}
 //                     min={minDate}
 //                     max={maxDate}
-//                     className="w-full border border-gray-300 rounded-md py-2 px-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+//                     className="w-full border border-gray-300 rounded-md py-2 px-3 pr-10 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold"
 //                     required
 //                   />
 //                   <Calendar className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -92,7 +92,7 @@
 //                     id="time"
 //                     value={time}
 //                     onChange={(e) => setTime(e.target.value)}
-//                     className="w-full border border-gray-300 rounded-md py-2 px-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+//                     className="w-full border border-gray-300 rounded-md py-2 px-3 pr-10 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold appearance-none"
 //                     required
 //                   >
 //                     <option value="">Select a time</option>
@@ -116,7 +116,7 @@
 //                   rows={3}
 //                   value={message}
 //                   onChange={(e) => setMessage(e.target.value)}
-//                   className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+//                   className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold"
 //                   placeholder="Any special requests or notes..."
 //                 />
 //               </div>
@@ -125,14 +125,14 @@
 //               <button
 //                 type="submit"
 //                 disabled={isSubmitting}
-//                 className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium disabled:bg-blue-400"
+//                 className="w-full bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary transition-colors font-medium disabled:bg-green-400"
 //               >
 //                 {isSubmitting ? 'Scheduling...' : 'Confirm Viewing'}
 //               </button>
 
 //               {/* Success Message */}
 //               {isSuccess && (
-//                 <div className="p-2 bg-green-100 text-green-700 rounded-md text-sm">
+//                 <div className="p-2 bg-gold/15 text-navy rounded-md text-sm">
 //                   Viewing scheduled successfully!
 //                 </div>
 //               )}
@@ -226,7 +226,7 @@ const ScheduleViewing: React.FC = () => {
           <p className="text-gray-600 mb-6">Please go back and select a property to schedule a viewing.</p>
           <button
             onClick={() => navigate('/properties')}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+            className="w-full bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary transition-colors"
           >
             Browse Properties
           </button>
@@ -236,15 +236,15 @@ const ScheduleViewing: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-light p-4">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         {/* Header */}
-        <div className="bg-blue-600 p-4 text-white">
+        <div className="bg-navy p-4 text-white">
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-bold">Schedule Property Viewing</h1>
             <button 
               onClick={() => navigate(-1)}
-              className="text-white hover:text-blue-200"
+              className="text-white hover:text-light"
             >
               <X size={24} />
             </button>
@@ -266,7 +266,7 @@ const ScheduleViewing: React.FC = () => {
           <div className="space-y-5">
             {/* Contact Information */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Your Information</h3>
+              <h3 className="text-lg font-medium text-ink mb-3">Your Information</h3>
               <div className="space-y-4">
                 <div className="relative">
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -279,7 +279,7 @@ const ScheduleViewing: React.FC = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold"
                       required
                     />
                     <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -298,7 +298,7 @@ const ScheduleViewing: React.FC = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold"
                         required
                       />
                       <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -316,7 +316,7 @@ const ScheduleViewing: React.FC = () => {
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold"
                         required
                       />
                       <Phone className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -328,7 +328,7 @@ const ScheduleViewing: React.FC = () => {
 
             {/* Viewing Details */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Viewing Details</h3>
+              <h3 className="text-lg font-medium text-ink mb-3">Viewing Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative">
                   <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
@@ -343,7 +343,7 @@ const ScheduleViewing: React.FC = () => {
                       onChange={handleChange}
                       min={minDate}
                       max={maxDate}
-                      className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold"
                       required
                     />
                     <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -360,7 +360,7 @@ const ScheduleViewing: React.FC = () => {
                       name="time"
                       value={formData.time}
                       onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                      className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold appearance-none"
                       required
                     >
                       <option value="">Select a time</option>
@@ -385,7 +385,7 @@ const ScheduleViewing: React.FC = () => {
                 rows={3}
                 value={formData.message}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold"
                 placeholder="Any special requests or questions..."
               />
             </div>
@@ -396,8 +396,8 @@ const ScheduleViewing: React.FC = () => {
               disabled={isSubmitting || isSuccess}
               className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
                 isSubmitting || isSuccess
-                  ? 'bg-blue-400 text-white'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  ? 'bg-green-400 text-white'
+                  : 'bg-navy text-white hover:bg-secondary'
               }`}
             >
               {isSubmitting ? (
@@ -417,7 +417,7 @@ const ScheduleViewing: React.FC = () => {
 
             {/* Success Message */}
             {isSuccess && (
-              <div className="p-3 bg-green-100 text-green-700 rounded-md text-center">
+              <div className="p-3 bg-gold/15 text-navy rounded-md text-center">
                 Thank you! We've received your viewing request and will contact you shortly to confirm.
               </div>
             )}

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-hot-toast';
 import { User, Mail, Phone, Shield, Camera, Save, Edit } from 'lucide-react';
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, deleteAccount, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -14,9 +17,9 @@ const Profile: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-light flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
+          <h2 className="text-2xl font-bold text-ink mb-4">Access Denied</h2>
           <p className="text-gray-600">Please log in to view your profile</p>
         </div>
       </div>
@@ -28,10 +31,19 @@ const Profile: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    // In a real app, this would update the user profile
-    console.log('Saving profile:', formData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      await updateUser({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.role as any
+      });
+      toast.success('Your profile has been updated successfully.');
+      setIsEditing(false);
+    } catch (error) {
+      toast.error('Failed to update profile. Please try again.');
+    }
   };
 
   const handleCancel = () => {
@@ -44,12 +56,24 @@ const Profile: React.FC = () => {
     setIsEditing(false);
   };
 
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        await deleteAccount(user.id);
+        toast.success('Your account has been deleted successfully.');
+        navigate('/login');
+      } catch (error) {
+        toast.error('Failed to delete account. Please try again.');
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-light py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
+          <h1 className="text-3xl font-bold text-ink">Profile Settings</h1>
           <p className="text-gray-600 mt-2">Manage your account information and preferences</p>
         </div>
 
@@ -58,15 +82,15 @@ const Profile: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 text-center">
               <div className="relative inline-block mb-4">
-                <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                  <User className="h-12 w-12 text-blue-600" />
+                <div className="w-24 h-24 bg-gold/15 rounded-full flex items-center justify-center mx-auto">
+                  <User className="h-12 w-12 text-primary" />
                 </div>
-                <button className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors">
+                <button className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full hover:bg-secondary transition-colors">
                   <Camera className="h-4 w-4" />
                 </button>
               </div>
               
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{user.name}</h3>
+              <h3 className="text-xl font-semibold text-ink mb-2">{user.name}</h3>
               <p className="text-gray-600 mb-4 capitalize">{user.role}</p>
               
               <div className="flex items-center justify-center mb-4">
@@ -74,7 +98,7 @@ const Profile: React.FC = () => {
                   user.isVerified ? 'text-green-500' : 'text-gray-400'
                 }`} />
                 <span className={`text-sm font-medium ${
-                  user.isVerified ? 'text-green-600' : 'text-gray-500'
+                  user.isVerified ? 'text-gold' : 'text-gray-500'
                 }`}>
                   {user.isVerified ? 'Verified Account' : 'Unverified Account'}
                 </span>
@@ -98,7 +122,7 @@ const Profile: React.FC = () => {
                   <div className="flex justify-between mb-2">
                     <span>KYC Status:</span>
                     <span className={`font-medium capitalize ${
-                      user.kycStatus === 'approved' ? 'text-green-600' :
+                      user.kycStatus === 'approved' ? 'text-gold' :
                       user.kycStatus === 'pending' ? 'text-yellow-600' :
                       'text-red-600'
                     }`}>
@@ -118,11 +142,11 @@ const Profile: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+                <h3 className="text-lg font-semibold text-ink">Personal Information</h3>
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="flex items-center text-blue-600 hover:text-blue-700 transition-colors"
+                    className="flex items-center text-primary hover:text-accent transition-colors"
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Edit
@@ -131,7 +155,7 @@ const Profile: React.FC = () => {
                   <div className="flex space-x-2">
                     <button
                       onClick={handleSave}
-                      className="flex items-center bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors text-sm"
+                      className="flex items-center bg-primary text-white px-3 py-1 rounded-md hover:bg-secondary transition-colors text-sm"
                     >
                       <Save className="h-4 w-4 mr-1" />
                       Save
@@ -158,7 +182,7 @@ const Profile: React.FC = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -172,7 +196,7 @@ const Profile: React.FC = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -186,7 +210,7 @@ const Profile: React.FC = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
 
@@ -199,7 +223,7 @@ const Profile: React.FC = () => {
                       value={formData.role}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
                     >
                       <option value="buyer">Buyer/Tenant</option>
                       <option value="agent">Real Estate Agent</option>
@@ -210,7 +234,7 @@ const Profile: React.FC = () => {
 
                 {/* Security Section */}
                 <div className="border-t pt-6">
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">Security</h4>
+                  <h4 className="text-md font-semibold text-ink mb-4">Security</h4>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -220,7 +244,7 @@ const Profile: React.FC = () => {
                         type="password"
                         placeholder="Enter current password"
                         disabled={!isEditing}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50"
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,7 +256,7 @@ const Profile: React.FC = () => {
                           type="password"
                           placeholder="Enter new password"
                           disabled={!isEditing}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50"
                         />
                       </div>
                       <div>
@@ -243,7 +267,7 @@ const Profile: React.FC = () => {
                           type="password"
                           placeholder="Confirm new password"
                           disabled={!isEditing}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50"
                         />
                       </div>
                     </div>
@@ -252,7 +276,7 @@ const Profile: React.FC = () => {
 
                 {/* Preferences Section */}
                 <div className="border-t pt-6">
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">Preferences</h4>
+                  <h4 className="text-md font-semibold text-ink mb-4">Preferences</h4>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -263,7 +287,7 @@ const Profile: React.FC = () => {
                         type="checkbox"
                         defaultChecked
                         disabled={!isEditing}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded disabled:opacity-50"
                       />
                     </div>
                     <div className="flex items-center justify-between">
@@ -275,7 +299,7 @@ const Profile: React.FC = () => {
                         type="checkbox"
                         defaultChecked
                         disabled={!isEditing}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded disabled:opacity-50"
                       />
                     </div>
                     <div className="flex items-center justify-between">
@@ -286,7 +310,7 @@ const Profile: React.FC = () => {
                       <input
                         type="checkbox"
                         disabled={!isEditing}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded disabled:opacity-50"
                       />
                     </div>
                   </div>
@@ -301,7 +325,10 @@ const Profile: React.FC = () => {
                         <h5 className="text-sm font-medium text-red-800">Delete Account</h5>
                         <p className="text-sm text-red-600">Permanently delete your account and all associated data</p>
                       </div>
-                      <button className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors text-sm">
+                      <button 
+                        onClick={handleDeleteAccount}
+                        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors text-sm"
+                      >
                         Delete Account
                       </button>
                     </div>

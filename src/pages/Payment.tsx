@@ -11,7 +11,8 @@ import {
   CheckCircle, 
   ArrowLeft,
   Users,
-  Percent
+  Percent,
+  Phone
 } from 'lucide-react';
 
 const Payment: React.FC = () => {
@@ -22,7 +23,7 @@ const Payment: React.FC = () => {
   const { user } = useAuth();
 
   const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'NGN'>('USD');
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'bank_transfer' | 'ussd' | 'mobile_money' | 'crypto'>('card');
   const [paymentSplit, setPaymentSplit] = useState<PaymentSplit | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
@@ -51,10 +52,10 @@ const Payment: React.FC = () => {
 
   if (!property) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-light flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Property Not Found</h2>
-          <button onClick={() => navigate('/properties')} className="text-blue-600 hover:text-blue-700">
+          <h2 className="text-2xl font-bold text-ink mb-4">Property Not Found</h2>
+          <button onClick={() => navigate('/properties')} className="text-gold hover:text-secondary">
             Back to Properties
           </button>
         </div>
@@ -86,7 +87,7 @@ const Payment: React.FC = () => {
         },
         currency: selectedCurrency,
         paymentMethod,
-        split: paymentSplit,
+        split: paymentSplit || undefined,
         ...formData
       };
 
@@ -101,17 +102,17 @@ const Payment: React.FC = () => {
 
   if (paymentComplete) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-light flex items-center justify-center">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8 text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Successful!</h2>
+          <h2 className="text-2xl font-bold text-ink mb-4">Payment Successful!</h2>
           <p className="text-gray-600 mb-6">
             Your payment has been processed and funds are being held in escrow until the transaction is verified.
           </p>
           <div className="space-y-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+              className="w-full bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary transition-colors"
             >
               Go to Dashboard
             </button>
@@ -131,25 +132,25 @@ const Payment: React.FC = () => {
   const currencySymbol = selectedCurrency === 'USD' ? '$' : '₦';
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-light py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate(`/property/${propertyId}`)}
-            className="flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4"
+            className="flex items-center text-gold hover:text-secondary transition-colors mb-4"
           >
             <ArrowLeft className="h-5 w-5 mr-1" />
             Back to Property
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Complete Your Purchase</h1>
+          <h1 className="text-3xl font-bold text-ink">Complete Your Purchase</h1>
           <p className="text-gray-600 mt-2">Secure payment processing with automatic fund distribution</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Payment Form */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Payment Details</h2>
+            <h2 className="text-xl font-semibold text-ink mb-6">Payment Details</h2>
 
             <form onSubmit={handlePayment} className="space-y-6">
               {/* Currency Selection */}
@@ -163,7 +164,7 @@ const Payment: React.FC = () => {
                     onClick={() => setSelectedCurrency('USD')}
                     className={`p-4 border rounded-lg text-center transition-colors ${
                       selectedCurrency === 'USD'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        ? 'border-primary bg-light/50 text-accent'
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
                   >
@@ -176,7 +177,7 @@ const Payment: React.FC = () => {
                     onClick={() => setSelectedCurrency('NGN')}
                     className={`p-4 border rounded-lg text-center transition-colors ${
                       selectedCurrency === 'NGN'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        ? 'border-primary bg-light/50 text-accent'
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
                   >
@@ -206,7 +207,7 @@ const Payment: React.FC = () => {
                           name="paymentMethod"
                           value={method.value}
                           checked={paymentMethod === method.value}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
+                          onChange={(e) => setPaymentMethod(e.target.value as any)}
                           className="mr-3"
                         />
                         <Icon className="h-5 w-5 mr-2 text-gray-400" />
@@ -230,7 +231,7 @@ const Payment: React.FC = () => {
                       value={formData.cardNumber}
                       onChange={handleInputChange}
                       placeholder="1234 5678 9012 3456"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                       required
                     />
                   </div>
@@ -245,7 +246,7 @@ const Payment: React.FC = () => {
                         value={formData.expiryDate}
                         onChange={handleInputChange}
                         placeholder="MM/YY"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                         required
                       />
                     </div>
@@ -259,7 +260,7 @@ const Payment: React.FC = () => {
                         value={formData.cvv}
                         onChange={handleInputChange}
                         placeholder="123"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                         required
                       />
                     </div>
@@ -274,9 +275,101 @@ const Payment: React.FC = () => {
                       value={formData.cardName}
                       onChange={handleInputChange}
                       placeholder="John Doe"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                       required
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* Bank Transfer Details (if bank_transfer selected) */}
+              {paymentMethod === 'bank_transfer' && (
+                <div className="bg-gold/10 border border-gold/40 rounded-lg p-4 space-y-4">
+                  <div className="flex items-start">
+                    <Building className="h-6 w-6 text-gold mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-navy mb-1">Bank Transfer Details</h4>
+                      <p className="text-sm text-navy mb-4">Please transfer the exact amount to the account below. Your transaction will be verified automatically.</p>
+                      
+                      <div className="bg-white rounded p-3 border border-gold/30 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Bank Name</span>
+                          <span className="font-medium text-ink">UBA</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Account Name</span>
+                          <span className="font-medium text-ink">Habixa Properties</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Account Number</span>
+                          <span className="font-mono font-bold text-lg text-gold tracking-wider">0123456789</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Amount to Transfer</span>
+                          <span className="font-medium text-ink">{selectedCurrency === 'USD' ? `$${property.price.usd.toLocaleString()}` : `₦${property.price.ngn.toLocaleString()}`}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
+                      Sender's Name (To help verify your payment)
+                    </label>
+                    <input
+                      type="text"
+                      name="senderName"
+                      placeholder="Name on your bank account"
+                      className="w-full px-3 py-2 border border-gold/40 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                      required={paymentMethod === 'bank_transfer'}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* USSD Details (if ussd selected) */}
+              {paymentMethod === 'ussd' && (
+                <div className="bg-gold/10 border border-gold/40 rounded-lg p-4 space-y-4">
+                  <div className="flex items-start">
+                    <Phone className="h-6 w-6 text-gold mt-1 mr-3 flex-shrink-0" />
+                    <div className="w-full">
+                      <h4 className="font-semibold text-navy mb-1">Pay with USSD</h4>
+                      <p className="text-sm text-navy mb-4">Select your bank below to generate a secure USSD code.</p>
+                      
+                      <select 
+                        className="w-full px-3 py-2 border border-gold/40 rounded-md focus:ring-2 focus:ring-gold bg-white mb-4"
+                        required={paymentMethod === 'ussd'}
+                      >
+                        <option value="">Select your Bank</option>
+                        <option value="access">Access Bank (*901#)</option>
+                        <option value="access_diamond">Access Bank (Diamond) (*426#)</option>
+                        <option value="alat">ALAT by WEMA (*945#)</option>
+                        <option value="ecobank">Ecobank (*326#)</option>
+                        <option value="fcmb">FCMB (*329#)</option>
+                        <option value="fidelity">Fidelity Bank (*770#)</option>
+                        <option value="firstbank">First Bank (*894#)</option>
+                        <option value="gtb">Guaranty Trust Bank (*737#)</option>
+                        <option value="heritage">Heritage Bank (*745#)</option>
+                        <option value="keystone">Keystone Bank (*7111#)</option>
+                        <option value="polaris">Polaris Bank (*833#)</option>
+                        <option value="providus">Providus Bank (*822#)</option>
+                        <option value="stanbic_ibtc">Stanbic IBTC Bank (*909#)</option>
+                        <option value="standard_chartered">Standard Chartered Bank (*977#)</option>
+                        <option value="sterling">Sterling Bank (*822#)</option>
+                        <option value="uba">UBA (*919#)</option>
+                        <option value="union">Union Bank (*826#)</option>
+                        <option value="unity">Unity Bank (*7799#)</option>
+                        <option value="wema">Wema Bank (*945#)</option>
+                        <option value="zenith">Zenith Bank (*966#)</option>
+                      </select>
+
+                      <div className="bg-white rounded p-4 border border-gold/30 text-center">
+                        <p className="text-sm text-gray-500 mb-2">Dial this code on your mobile phone:</p>
+                        <div className="font-mono text-2xl font-bold text-gold tracking-wider bg-gold/10 py-2 rounded border border-dashed border-gold/50">
+                          *000*000#
+                        </div>
+                        <p className="text-xs text-gray-400 mt-3">Code expires in 5:00 minutes</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -293,7 +386,7 @@ const Payment: React.FC = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="john@example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                     required
                   />
                 </div>
@@ -307,7 +400,7 @@ const Payment: React.FC = () => {
                     value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="+234 801 234 5678"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                     required
                   />
                 </div>
@@ -317,7 +410,7 @@ const Payment: React.FC = () => {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full bg-navy text-white py-3 px-4 rounded-md hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {isProcessing ? (
                   <>
@@ -338,7 +431,7 @@ const Payment: React.FC = () => {
           <div className="space-y-6">
             {/* Property Summary */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Summary</h3>
+              <h3 className="text-lg font-semibold text-ink mb-4">Property Summary</h3>
               <div className="flex space-x-4">
                 <img
                   src={property.images[0]}
@@ -346,13 +439,13 @@ const Payment: React.FC = () => {
                   className="w-20 h-20 object-cover rounded-md"
                 />
                 <div className="flex-1">
-                  <h4 className="font-medium text-gray-900 mb-1">{property.title}</h4>
+                  <h4 className="font-medium text-ink mb-1">{property.title}</h4>
                   <p className="text-sm text-gray-600">{property.location.city}, {property.location.state}</p>
                   <div className="mt-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       property.status === 'for-sale' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
+                        ? 'bg-gold/15 text-navy' 
+                        : 'bg-light/70 text-accent'
                     }`}>
                       {property.status === 'for-sale' ? 'For Sale' : 'For Rent'}
                     </span>
@@ -364,19 +457,19 @@ const Payment: React.FC = () => {
             {/* Payment Breakdown */}
             {paymentSplit && (
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <h3 className="text-lg font-semibold text-ink mb-4 flex items-center">
                   <Users className="h-5 w-5 mr-2" />
                   Payment Distribution
                 </h3>
                 
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-md">
+                  <div className="flex justify-between items-center p-3 bg-gold/10 rounded-md">
                     <div>
-                      <div className="font-medium text-gray-900">Property Owner</div>
+                      <div className="font-medium text-ink">Property Owner</div>
                       <div className="text-sm text-gray-600">{property.owner.name}</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-ink">
                         {currencySymbol}{(selectedCurrency === 'USD' ? paymentSplit.owner.amount.usd : paymentSplit.owner.amount.ngn).toLocaleString()}
                       </div>
                       <div className="text-sm text-gray-600 flex items-center">
@@ -387,13 +480,13 @@ const Payment: React.FC = () => {
                   </div>
 
                   {paymentSplit.agent && property.agent && (
-                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-md">
+                    <div className="flex justify-between items-center p-3 bg-light/40 rounded-md">
                       <div>
-                        <div className="font-medium text-gray-900">Agent Commission</div>
+                        <div className="font-medium text-ink">Agent Commission</div>
                         <div className="text-sm text-gray-600">{property.agent.name}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-ink">
                           {currencySymbol}{(selectedCurrency === 'USD' ? paymentSplit.agent.amount.usd : paymentSplit.agent.amount.ngn).toLocaleString()}
                         </div>
                         <div className="text-sm text-gray-600 flex items-center">
@@ -406,11 +499,11 @@ const Payment: React.FC = () => {
 
                   <div className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
                     <div>
-                      <div className="font-medium text-gray-900">Service Fee</div>
-                      <div className="text-sm text-gray-600">RealEstate Pro</div>
+                      <div className="font-medium text-ink">Service Fee</div>
+                      <div className="text-sm text-gray-600">Habixa Properties</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-ink">
                         {currencySymbol}{(selectedCurrency === 'USD' ? paymentSplit.serviceFee.amount.usd : paymentSplit.serviceFee.amount.ngn).toLocaleString()}
                       </div>
                       <div className="text-sm text-gray-600 flex items-center">
@@ -422,8 +515,8 @@ const Payment: React.FC = () => {
 
                   <div className="border-t pt-4">
                     <div className="flex justify-between items-center">
-                      <div className="text-lg font-semibold text-gray-900">Total Amount</div>
-                      <div className="text-lg font-semibold text-gray-900">
+                      <div className="text-lg font-semibold text-ink">Total Amount</div>
+                      <div className="text-lg font-semibold text-ink">
                         {currencySymbol}{totalAmount.toLocaleString()}
                       </div>
                     </div>
@@ -433,12 +526,12 @@ const Payment: React.FC = () => {
             )}
 
             {/* Security Notice */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-light/40 border border-light rounded-lg p-4">
               <div className="flex items-start">
-                <Shield className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
+                <Shield className="h-5 w-5 text-gold mr-3 mt-0.5" />
                 <div>
-                  <h4 className="font-medium text-blue-900 mb-1">Secure Escrow Payment</h4>
-                  <p className="text-sm text-blue-700">
+                  <h4 className="font-medium text-accent mb-1">Secure Escrow Payment</h4>
+                  <p className="text-sm text-primary">
                     Your payment will be held securely in escrow until the property transaction is verified and completed. 
                     All parties will be notified once funds are released.
                   </p>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Camera, Video, FileText, Upload, Image, File } from 'lucide-react';
+import { X, Video, FileText, Upload, Image, File, Camera } from 'lucide-react';
 import VideoRecorder from './VideoRecorder';
 
 interface SheetProps {
@@ -79,7 +79,7 @@ const Sheet: React.FC<SheetProps> = ({
             onClick={() => setActiveTab('media')}
             className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
               activeTab === 'media'
-                ? 'text-blue-600 border-b-2 border-blue-600'
+                ? 'text-gold border-b-2 border-gold'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -89,7 +89,7 @@ const Sheet: React.FC<SheetProps> = ({
             onClick={() => setActiveTab('documents')}
             className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
               activeTab === 'documents'
-                ? 'text-blue-600 border-b-2 border-blue-600'
+                ? 'text-gold border-b-2 border-gold'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -106,11 +106,11 @@ const Sheet: React.FC<SheetProps> = ({
                 onClick={() => setShowCamera(true)}
                 className="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                  <Camera className="h-6 w-6 text-blue-600" />
+                <div className="w-12 h-12 bg-light/60 rounded-lg flex items-center justify-center mr-4">
+                  <Camera className="h-6 w-6 text-primary" />
                 </div>
                 <div className="text-left">
-                  <h4 className="font-medium text-gray-900">Take Photo</h4>
+                  <h4 className="font-medium text-ink">Take Photo</h4>
                   <p className="text-sm text-gray-500">Capture a new photo</p>
                 </div>
               </button>
@@ -120,11 +120,11 @@ const Sheet: React.FC<SheetProps> = ({
                 onClick={() => setShowVideoRecorder(true)}
                 className="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                  <Video className="h-6 w-6 text-green-600" />
+                <div className="w-12 h-12 bg-gold/15 rounded-lg flex items-center justify-center mr-4">
+                  <Video className="h-6 w-6 text-gold" />
                 </div>
                 <div className="text-left">
-                  <h4 className="font-medium text-gray-900">Record Video</h4>
+                  <h4 className="font-medium text-ink">Record Video</h4>
                   <p className="text-sm text-gray-500">Record a new video</p>
                 </div>
               </button>
@@ -135,7 +135,7 @@ const Sheet: React.FC<SheetProps> = ({
                   <Upload className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="text-left">
-                  <h4 className="font-medium text-gray-900">Upload Image</h4>
+                  <h4 className="font-medium text-ink">Upload Image</h4>
                   <p className="text-sm text-gray-500">Choose from gallery</p>
                 </div>
                 <input
@@ -152,7 +152,7 @@ const Sheet: React.FC<SheetProps> = ({
                   <Video className="h-6 w-6 text-orange-600" />
                 </div>
                 <div className="text-left">
-                  <h4 className="font-medium text-gray-900">Upload Video</h4>
+                  <h4 className="font-medium text-ink">Upload Video</h4>
                   <p className="text-sm text-gray-500">Choose from gallery</p>
                 </div>
                 <input
@@ -171,7 +171,7 @@ const Sheet: React.FC<SheetProps> = ({
                   <FileText className="h-6 w-6 text-red-600" />
                 </div>
                 <div className="text-left">
-                  <h4 className="font-medium text-gray-900">Upload Document</h4>
+                  <h4 className="font-medium text-ink">Upload Document</h4>
                   <p className="text-sm text-gray-500">PDF, DOC, or other files</p>
                 </div>
                 <input
@@ -184,11 +184,11 @@ const Sheet: React.FC<SheetProps> = ({
 
               {/* Upload Image */}
               <label className="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                  <Image className="h-6 w-6 text-blue-600" />
+                <div className="w-12 h-12 bg-light/60 rounded-lg flex items-center justify-center mr-4">
+                  <Image className="h-6 w-6 text-primary" />
                 </div>
                 <div className="text-left">
-                  <h4 className="font-medium text-gray-900">Upload Image</h4>
+                  <h4 className="font-medium text-ink">Upload Image</h4>
                   <p className="text-sm text-gray-500">JPG, PNG, or other images</p>
                 </div>
                 <input
@@ -205,7 +205,7 @@ const Sheet: React.FC<SheetProps> = ({
                   <File className="h-6 w-6 text-gray-600" />
                 </div>
                 <div className="text-left">
-                  <h4 className="font-medium text-gray-900">Upload Any File</h4>
+                  <h4 className="font-medium text-ink">Upload Any File</h4>
                   <p className="text-sm text-gray-500">Any file type</p>
                 </div>
                 <input
@@ -222,12 +222,38 @@ const Sheet: React.FC<SheetProps> = ({
         <div className="h-6"></div>
       </div>
 
-      {/* Camera Modal */}
+      {/* Camera Modal (uses file input to trigger device camera) */}
       {showCamera && (
-        <Camera
-          onPhotoTaken={handlePhotoTaken}
-          onClose={() => setShowCamera(false)}
-        />
+        <div className="fixed inset-0 z-60 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-60" onClick={() => setShowCamera(false)} />
+          <div className="relative bg-white rounded-lg p-6 z-70 w-11/12 max-w-md">
+            <h4 className="text-lg font-medium mb-4">Take Photo</h4>
+            <p className="text-sm text-gray-500 mb-4">Use your device camera to take a photo.</p>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const result = reader.result as string | null;
+                  if (result) handlePhotoTaken(result);
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowCamera(false)}
+                className="px-4 py-2 bg-gray-100 rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Video Recorder Modal */}

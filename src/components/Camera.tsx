@@ -215,7 +215,7 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
             {availableCameras.length > 1 && (
               <button
                 onClick={() => setShowCameraSelector(!showCameraSelector)}
-                className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                className="px-3 py-1 text-sm bg-gold/15 text-navy rounded-md hover:bg-light"
               >
                 Switch Camera
               </button>
@@ -239,20 +239,20 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
               <p className="text-gray-600 mb-4">{error}</p>
               <button
                 onClick={startCamera}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="bg-navy text-white px-4 py-2 rounded-md hover:bg-secondary"
               >
                 Try Again
               </button>
             </div>
                      ) : !isCameraActive ? (
              <div className="p-8 text-center">
-               <div className="text-blue-500 mb-4">
+               <div className="text-primary mb-4">
                  <CameraIcon size={48} className="mx-auto" />
                </div>
                <p className="text-gray-600 mb-4">Computer camera not started</p>
                <button
                  onClick={startCamera}
-                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                 className="bg-navy text-white px-4 py-2 rounded-md hover:bg-secondary"
                >
                  Start Camera
                </button>
@@ -275,7 +275,7 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
                 </button>
                 <button
                   onClick={downloadPhoto}
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center"
+                  className="flex-1 bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary flex items-center justify-center"
                 >
                   <Download size={16} className="mr-2" />
                   Download
@@ -283,7 +283,7 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
               </div>
               <button
                 onClick={savePhoto}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 mt-2"
+                className="w-full bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary mt-2"
               >
                 Use This Photo
               </button>
@@ -318,7 +318,7 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
                                    <button
                     onClick={capturePhoto}
                     disabled={!isCameraActive}
-                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full bg-navy text-white py-3 px-4 rounded-md hover:bg-secondary disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     <CameraIcon size={20} className="mr-2" />
                     Capture Photo
@@ -355,7 +355,7 @@ const Camera: React.FC<CameraProps> = ({ onPhotoTaken, onClose }) => {
                   setTimeout(() => startCamera(), 100);
                 }}
                 className={`w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100 ${
-                  selectedCamera === camera.deviceId ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                  selectedCamera === camera.deviceId ? 'bg-gold/15 text-navy' : 'text-gray-700'
                 }`}
               >
                 {camera.label || `Camera ${camera.deviceId.slice(0, 8)}`}

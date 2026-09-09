@@ -38,6 +38,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
     },
     type: editProperty?.type || 'apartment',
     status: editProperty?.status || 'for-sale',
+    availabilityStatus: editProperty?.availabilityStatus || 'available',
     location: {
       address: editProperty?.location.address || '',
       city: editProperty?.location.city || '',
@@ -56,37 +57,56 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
       parking: editProperty?.features.parking || false
     },
     amenities: editProperty?.amenities || [],
-    images: editProperty?.images || []
+    images: editProperty?.images || [],
+    plotType: editProperty?.plotType || '',
+    topography: editProperty?.topography || '',
+    hasSurveyPlan: editProperty?.hasSurveyPlan || false,
+    hasCOO: editProperty?.hasCOO || false,
+    accessRoad: editProperty?.accessRoad ?? true
   });
 
   const [newAmenity, setNewAmenity] = useState('');
   const [imageUrls, setImageUrls] = useState('');
   const [showSheet, setShowSheet] = useState(false);
 
-  const amenityOptions = [
-    'Swimming Pool', 'Gym', '24/7 Security', 'Generator', 'Elevator',
-    'Garden', 'Borehole', 'WiFi', 'Air Conditioning', 'Balcony',
-    'Garage', 'Playground', 'CCTV', 'Intercom', 'Solar Power'
-  ];
+  const amenityOptions = formData.type === 'land'
+    ? [
+        'Survey Plan', 'Certificate of Occupancy', 'Access Road', 'Fenced',
+        'Near Tarred Road', 'Natural Water Source', 'Fenced Perimeter', 'Electricity Available'
+      ]
+    : [
+        'Swimming Pool', 'Gym', '24/7 Security', 'Generator', 'Elevator',
+        'Garden', 'Borehole', 'WiFi', 'Air Conditioning', 'Balcony',
+        'Garage', 'Playground', 'CCTV', 'Intercom', 'Solar Power'
+      ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    const nextValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
     
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
+    if (!name.includes('.')) {
       setFormData(prev => ({
         ...prev,
-        [parent]: {
-          ...prev[parent as keyof typeof prev],
-          [child]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-        }
+        [name]: nextValue
       }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-      }));
+      return;
     }
+
+    const keys = name.split('.');
+    setFormData(prev => {
+      const next: any = { ...prev };
+      let cursor: any = next;
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        const k = keys[i];
+        const existing = cursor?.[k];
+        cursor[k] = typeof existing === 'object' && existing !== null ? { ...existing } : {};
+        cursor = cursor[k];
+      }
+
+      cursor[keys[keys.length - 1]] = nextValue;
+      return next;
+    });
   };
 
 
@@ -179,8 +199,9 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
       return;
     }
 
+    const { plotType, topography, hasSurveyPlan, hasCOO, accessRoad, ...restFormData } = formData;
     const propertyData = {
-      ...formData,
+      ...restFormData,
       price: {
         usd: parseFloat(formData.price.usd.toString()),
         ngn: parseFloat(formData.price.ngn.toString()) || parseFloat(formData.price.usd.toString()) * 1600
@@ -194,8 +215,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
       location: {
         ...formData.location,
         coordinates: {
-          lat: parseFloat(formData.location.coordinates.lat.toString()) || 6.5244,
-          lng: parseFloat(formData.location.coordinates.lng.toString()) || 3.3792
+          lat: parseFloat(formData.location.coordinates.lat.toString()) || 9.8965,
+          lng: parseFloat(formData.location.coordinates.lng.toString()) || 8.8583
         }
       },
       owner: {
@@ -204,6 +225,13 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
         email: user.email,
         phone: user.phone || ''
       },
+      ...(formData.type === 'land' && {
+        plotType: (plotType || undefined) as 'residential' | 'commercial' | 'agricultural' | 'mixed' | undefined,
+        topography: (topography || undefined) as 'flat' | 'sloping' | 'hilly' | undefined,
+        hasSurveyPlan,
+        hasCOO,
+        accessRoad
+      }),
       agent: user.role === 'agent' ? {
         id: user.id,
         name: user.name,
@@ -214,11 +242,12 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
     };
 
     try {
+      const payload = propertyData as Omit<Property, 'id' | 'createdAt' | 'updatedAt'>;
       if (editProperty) {
-        updateProperty(editProperty.id, propertyData);
+        updateProperty(editProperty.id, payload);
         toast.success('Property updated successfully!');
       } else {
-        addProperty(propertyData);
+        addProperty(payload);
         toast.success('Property added successfully!');
       }
       
@@ -235,7 +264,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-ink">
           {editProperty ? 'Edit Property' : 'Add New Property'}
         </h2>
         {onClose && (
@@ -248,7 +277,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic Information */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+          <h3 className="text-lg font-semibold text-ink mb-4">Basic Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -259,8 +288,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="e.g., Luxury 3-Bedroom Apartment in Victoria Island"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                placeholder="e.g., Luxury 3-Bedroom Apartment in Rayfield, Jos"
                 required
               />
             </div>
@@ -273,7 +302,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="type"
                 value={formData.type}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                 required
               >
                 <option value="apartment">Apartment</option>
@@ -291,11 +320,28 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                 required
               >
                 <option value="for-sale">For Sale</option>
                 <option value="for-rent">For Rent</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Availability *
+              </label>
+              <select
+                name="availabilityStatus"
+                value={formData.availabilityStatus}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                required
+              >
+                <option value="available">Available</option>
+                <option value="taken">Taken</option>
+                <option value="sold">Sold</option>
               </select>
             </div>
 
@@ -310,7 +356,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                   name="price.usd"
                   value={formData.price.usd}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                   placeholder="250000"
                   required
                 />
@@ -326,7 +372,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="price.ngn"
                 value={formData.price.ngn}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                 placeholder="Auto-calculated if empty"
               />
             </div>
@@ -340,7 +386,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 value={formData.description}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                 placeholder="Describe the property features, location benefits, and unique selling points..."
                 required
               />
@@ -350,7 +396,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
 
         {/* Location */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Location</h3>
+          <h3 className="text-lg font-semibold text-ink mb-4">Location</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -363,8 +409,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                   name="location.address"
                   value={formData.location.address}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="123 Main Street, Victoria Island"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                  placeholder="15 Rayfield Road, Rayfield"
                   required
                 />
               </div>
@@ -379,8 +425,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="location.city"
                 value={formData.location.city}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Lagos"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                placeholder="Jos"
                 required
               />
             </div>
@@ -394,8 +440,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="location.state"
                 value={formData.location.state}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Lagos"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                placeholder="Plateau"
                 required
               />
             </div>
@@ -410,8 +456,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="location.coordinates.lat"
                 value={formData.location.coordinates.lat}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="6.5244"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                placeholder="9.8965"
               />
             </div>
 
@@ -425,8 +471,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="location.coordinates.lng"
                 value={formData.location.coordinates.lng}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="3.3792"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                placeholder="8.8583"
               />
             </div>
           </div>
@@ -434,7 +480,88 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
 
         {/* Property Features */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Features</h3>
+          <h3 className="text-lg font-semibold text-ink mb-4">Property Features</h3>
+          {formData.type === 'land' ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Plot Type</label>
+                  <select
+                    name="plotType"
+                    value={formData.plotType}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                  >
+                    <option value="">Select plot type</option>
+                    <option value="residential">Residential</option>
+                    <option value="commercial">Commercial</option>
+                    <option value="agricultural">Agricultural</option>
+                    <option value="mixed">Mixed Use</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Topography</label>
+                  <select
+                    name="topography"
+                    value={formData.topography}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                  >
+                    <option value="">Select topography</option>
+                    <option value="flat">Flat</option>
+                    <option value="sloping">Sloping</option>
+                    <option value="hilly">Hilly</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Area (sqm) *</label>
+                <input
+                  type="number"
+                  name="features.area"
+                  value={formData.features.area}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
+                  placeholder="500"
+                  required
+                  min="1"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="hasSurveyPlan"
+                    checked={formData.hasSurveyPlan}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-gold focus:ring-gold border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Survey Plan Available</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="hasCOO"
+                    checked={formData.hasCOO}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-gold focus:ring-gold border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Certificate of Occupancy</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="accessRoad"
+                    checked={formData.accessRoad}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 text-gold focus:ring-gold border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Access Road</span>
+                </label>
+              </div>
+            </div>
+          ) : (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -445,7 +572,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="features.bedrooms"
                 value={formData.features.bedrooms}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                 placeholder="3"
                 min="0"
               />
@@ -460,7 +587,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="features.bathrooms"
                 value={formData.features.bathrooms}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                 placeholder="2"
                 min="0"
               />
@@ -475,7 +602,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="features.area"
                 value={formData.features.area}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                 placeholder="120"
                 required
                 min="1"
@@ -490,7 +617,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="features.furnished"
                 checked={formData.features.furnished}
                 onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-gold focus:ring-gold border-gray-300 rounded"
               />
               <span className="ml-2 text-sm text-gray-700">Furnished</span>
             </label>
@@ -501,7 +628,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="features.petFriendly"
                 checked={formData.features.petFriendly}
                 onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-gold focus:ring-gold border-gray-300 rounded"
               />
               <span className="ml-2 text-sm text-gray-700">Pet Friendly</span>
             </label>
@@ -512,16 +639,18 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 name="features.parking"
                 checked={formData.features.parking}
                 onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-gold focus:ring-gold border-gray-300 rounded"
               />
               <span className="ml-2 text-sm text-gray-700">Parking Available</span>
             </label>
           </div>
+          </>
+          )}
         </div>
 
         {/* Amenities */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Amenities</h3>
+          <h3 className="text-lg font-semibold text-ink mb-4">Amenities</h3>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
             {amenityOptions.map((amenity) => (
@@ -531,7 +660,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 onClick={() => addAmenity(amenity)}
                 className={`p-2 text-sm border rounded-md transition-colors ${
                   formData.amenities.includes(amenity)
-                    ? 'bg-blue-100 border-blue-500 text-blue-700'
+                    ? 'bg-light/70 border-primary text-accent'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
               >
@@ -548,14 +677,14 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
               type="text"
               value={newAmenity}
               onChange={(e) => setNewAmenity(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
               placeholder="Add custom amenity"
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAmenity(newAmenity))}
             />
             <button
               type="button"
               onClick={() => addAmenity(newAmenity)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-navy text-white rounded-md hover:bg-secondary transition-colors"
             >
               <Plus className="h-4 w-4" />
             </button>
@@ -568,13 +697,13 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 {formData.amenities.map((amenity: string) => (
                   <span
                     key={amenity}
-                    className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                    className="inline-flex items-center px-3 py-1 bg-light/70 text-accent text-sm rounded-full"
                   >
                     {amenity}
                     <button
                       type="button"
                       onClick={() => removeAmenity(amenity)}
-                      className="ml-2 text-blue-600 hover:text-blue-800"
+                      className="ml-2 text-primary hover:text-accent"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -587,7 +716,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
 
         {/* Images */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Images *</h3>
+          <h3 className="text-lg font-semibold text-ink mb-4">Property Images *</h3>
           
           <div className="space-y-4">
             {/* Media Upload Options */}
@@ -595,7 +724,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
               <button
                 type="button"
                 onClick={() => setShowSheet(true)}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="flex items-center px-4 py-2 bg-navy text-white rounded-md hover:bg-secondary transition-colors"
               >
                 <ImagePlus className="h-5 w-5 mr-2" />
                 Add Media
@@ -603,7 +732,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
               <button
                 type="button"
                 onClick={() => setShowSheet(true)}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                className="flex items-center px-4 py-2 bg-navy text-white rounded-md hover:bg-secondary transition-colors"
               >
                 <Camera className="h-5 w-5 mr-2" />
                 Take Photo
@@ -626,14 +755,14 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
                 value={imageUrls}
                 onChange={(e) => setImageUrls(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                 placeholder="https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg
 https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg"
               />
               <button
                 type="button"
                 onClick={addImages}
-                className="mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center"
+                className="mt-2 px-4 py-2 bg-navy text-white rounded-md hover:bg-secondary transition-colors flex items-center"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Add Images
@@ -681,7 +810,7 @@ https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg"
           )}
           <button
             type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
+            className="px-6 py-2 bg-navy text-white rounded-md hover:bg-secondary transition-colors flex items-center"
           >
             <Home className="h-4 w-4 mr-2" />
             {editProperty ? 'Update Property' : 'Add Property'}

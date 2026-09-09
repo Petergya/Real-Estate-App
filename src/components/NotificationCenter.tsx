@@ -1,98 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Bell, X, Check, AlertCircle, DollarSign, Home, Users } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { formatDistanceToNow } from 'date-fns';
 
-interface Notification {
-  id: string;
-  type: 'payment' | 'property' | 'system' | 'message';
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-  actionUrl?: string;
-}
-
 const NotificationCenter: React.FC = () => {
-  const { user } = useAuth();
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    markAllAsRead, 
+    deleteNotification 
+  } = useNotification();
+
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  // Mock notifications - in production, these would come from an API
-  useEffect(() => {
-    if (user) {
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'payment',
-          title: 'Payment Received',
-          message: 'You received $2,500 from property rental payment',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
-          read: false,
-          actionUrl: '/dashboard'
-        },
-        {
-          id: '2',
-          type: 'property',
-          title: 'New Property Inquiry',
-          message: 'Someone is interested in your Victoria Island apartment',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-          read: false,
-          actionUrl: '/dashboard'
-        },
-        {
-          id: '3',
-          type: 'system',
-          title: 'KYC Verification Complete',
-          message: 'Your identity verification has been approved',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-          read: true,
-          actionUrl: '/profile'
-        },
-        {
-          id: '4',
-          type: 'message',
-          title: 'New Message',
-          message: 'Agent John Smith sent you a message about property viewing',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
-          read: true,
-          actionUrl: '/dashboard'
-        }
-      ];
-      setNotifications(mockNotifications);
-    }
-  }, [user]);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, read: true }
-          : notification
-      )
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    );
-  };
-
-  const deleteNotification = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.filter(notification => notification.id !== notificationId)
-    );
-  };
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'payment':
-        return <DollarSign className="h-5 w-5 text-green-600" />;
+        return <DollarSign className="h-5 w-5 text-gold" />;
       case 'property':
-        return <Home className="h-5 w-5 text-blue-600" />;
+        return <Home className="h-5 w-5 text-gold" />;
       case 'message':
         return <Users className="h-5 w-5 text-purple-600" />;
       default:
@@ -100,14 +28,15 @@ const NotificationCenter: React.FC = () => {
     }
   };
 
-  if (!user) return null;
+  // You can keep the user check inside but we want the bell icon visible to everyone now
+  // if (!user) return null;
 
   return (
     <div className="relative">
       {/* Notification Bell */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
+        className="relative p-2 text-gray-600 hover:text-ink transition-colors"
       >
         <Bell className="h-6 w-6" />
         {unreadCount > 0 && (
@@ -130,12 +59,12 @@ const NotificationCenter: React.FC = () => {
           <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+              <h3 className="text-lg font-semibold text-ink">Notifications</h3>
               <div className="flex items-center space-x-2">
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-sm text-blue-600 hover:text-blue-700"
+                    className="text-sm text-gold hover:text-secondary"
                   >
                     Mark all read
                   </button>
@@ -162,7 +91,7 @@ const NotificationCenter: React.FC = () => {
                     <div
                       key={notification.id}
                       className={`p-4 hover:bg-gray-50 transition-colors ${
-                        !notification.read ? 'bg-blue-50' : ''
+                        !notification.read ? 'bg-light/50' : ''
                       }`}
                     >
                       <div className="flex items-start space-x-3">
@@ -174,13 +103,28 @@ const NotificationCenter: React.FC = () => {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <p className={`text-sm font-medium ${
-                                !notification.read ? 'text-gray-900' : 'text-gray-700'
+                                !notification.read ? 'text-ink' : 'text-gray-700'
                               }`}>
                                 {notification.title}
                               </p>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {notification.message}
-                              </p>
+                              <div className="mt-1">
+                                <p className={`text-sm text-gray-600 transition-all ${
+                                  expandedId !== notification.id ? 'line-clamp-2' : ''
+                                }`}>
+                                  {notification.message}
+                                </p>
+                                {notification.message.length > 80 && (
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setExpandedId(expandedId === notification.id ? null : notification.id);
+                                    }}
+                                    className="text-xs text-gold font-medium hover:text-navy transition-colors mt-1 focus:outline-none"
+                                  >
+                                    {expandedId === notification.id ? 'Show less' : 'Read more'}
+                                  </button>
+                                )}
+                              </div>
                               <p className="text-xs text-gray-500 mt-2">
                                 {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
                               </p>
@@ -190,7 +134,7 @@ const NotificationCenter: React.FC = () => {
                               {!notification.read && (
                                 <button
                                   onClick={() => markAsRead(notification.id)}
-                                  className="text-blue-600 hover:text-blue-700 p-1"
+                                  className="text-gold hover:text-secondary p-1"
                                   title="Mark as read"
                                 >
                                   <Check className="h-4 w-4" />
@@ -206,24 +150,12 @@ const NotificationCenter: React.FC = () => {
                             </div>
                           </div>
                           
-                          {notification.actionUrl && (
-                            <button
-                              onClick={() => {
-                                markAsRead(notification.id);
-                                setIsOpen(false);
-                                // In a real app, you'd navigate to the URL
-                                console.log('Navigate to:', notification.actionUrl);
-                              }}
-                              className="text-xs text-blue-600 hover:text-blue-700 mt-2"
-                            >
-                              View Details →
-                            </button>
-                          )}
+                          {/* Removed actionUrl button as requested */}
                         </div>
                       </div>
                       
                       {!notification.read && (
-                        <div className="absolute left-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-600 rounded-full"></div>
+                        <div className="absolute left-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-primary rounded-full"></div>
                       )}
                     </div>
                   ))}
@@ -240,7 +172,7 @@ const NotificationCenter: React.FC = () => {
                     // Navigate to full notifications page
                     console.log('Navigate to notifications page');
                   }}
-                  className="text-sm text-blue-600 hover:text-blue-700"
+                  className="text-sm text-gold hover:text-secondary"
                 >
                   View All Notifications
                 </button>

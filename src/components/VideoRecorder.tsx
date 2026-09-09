@@ -224,7 +224,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
             {availableCameras.length > 1 && (
               <button
                 onClick={() => setShowCameraSelector(!showCameraSelector)}
-                className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                className="px-3 py-1 text-sm bg-gold/15 text-navy rounded-md hover:bg-light"
               >
                 Switch Camera
               </button>
@@ -248,20 +248,20 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
               <p className="text-gray-600 mb-4">{error}</p>
               <button
                 onClick={startCamera}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="bg-navy text-white px-4 py-2 rounded-md hover:bg-secondary"
               >
                 Try Again
               </button>
             </div>
           ) : !isCameraActive ? (
             <div className="p-8 text-center">
-              <div className="text-blue-500 mb-4">
+              <div className="text-primary mb-4">
                 <Video size={48} className="mx-auto" />
               </div>
               <p className="text-gray-600 mb-4">Camera not started</p>
               <button
                 onClick={startCamera}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="bg-navy text-white px-4 py-2 rounded-md hover:bg-secondary"
               >
                 Start Camera
               </button>
@@ -277,7 +277,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
               <div className="flex space-x-2 mt-4">
                 <button
                   onClick={isPlaying ? pauseVideo : playVideo}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center"
+                  className="flex-1 bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary flex items-center justify-center"
                 >
                   {isPlaying ? <Pause size={16} /> : <Play size={16} />}
                   <span className="ml-2">{isPlaying ? 'Pause' : 'Play'}</span>
@@ -293,14 +293,14 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
               <div className="flex space-x-2 mt-2">
                 <button
                   onClick={downloadVideo}
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center"
+                  className="flex-1 bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary flex items-center justify-center"
                 >
                   <Download size={16} className="mr-2" />
                   Download
                 </button>
                 <button
                   onClick={saveVideo}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                  className="flex-1 bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary"
                 >
                   Use This Video
                 </button>
@@ -327,7 +327,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
                   className={`w-full py-3 px-4 rounded-md font-medium flex items-center justify-center ${
                     isRecording
                       ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-navy text-white hover:bg-secondary'
                   } disabled:bg-gray-400 disabled:cursor-not-allowed`}
                 >
                   {isRecording ? (
@@ -361,7 +361,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({ onVideoRecorded, onClose 
                   setTimeout(() => startCamera(), 100);
                 }}
                 className={`w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100 ${
-                  selectedCamera === camera.deviceId ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                  selectedCamera === camera.deviceId ? 'bg-gold/15 text-navy' : 'text-gray-700'
                 }`}
               >
                 {camera.label || `Camera ${camera.deviceId.slice(0, 8)}`}

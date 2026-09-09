@@ -22,11 +22,11 @@ const Dashboard: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-light flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
+          <h2 className="text-2xl font-bold text-ink mb-4">Access Denied</h2>
           <p className="text-gray-600 mb-4">Please log in to access your dashboard</p>
-          <Link to="/login" className="text-blue-600 hover:text-blue-700">
+          <Link to="/login" className="text-gold hover:text-secondary">
             Go to Login
           </Link>
         </div>
@@ -56,11 +56,11 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-light">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-ink">
             Welcome back, {user.name}!
           </h1>
           <p className="text-gray-600 mt-2">
@@ -72,24 +72,24 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Home className="h-6 w-6 text-blue-600" />
+              <div className="p-3 bg-gold/15 rounded-lg">
+                <Home className="h-6 w-6 text-gold" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Properties</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalProperties}</p>
+                <p className="text-2xl font-bold text-ink">{stats.totalProperties}</p>
               </div>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-gold/15 rounded-lg">
+                <DollarSign className="h-6 w-6 text-gold" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Portfolio Value</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-ink">
                   ${stats.totalValue.toLocaleString()}
                 </p>
               </div>
@@ -103,7 +103,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Transactions</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalTransactions}</p>
+                <p className="text-2xl font-bold text-ink">{stats.totalTransactions}</p>
               </div>
             </div>
           </div>
@@ -115,7 +115,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-ink">
                   ${stats.monthlyRevenue.toLocaleString()}
                 </p>
               </div>
@@ -135,7 +135,7 @@ const Dashboard: React.FC = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                       activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
+                        ? 'border-gold text-gold'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
@@ -155,8 +155,8 @@ const Dashboard: React.FC = () => {
                   {/* Recent Properties */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Recent Properties</h3>
-                      <Link to="/properties" className="text-blue-600 hover:text-blue-700 text-sm">
+                      <h3 className="text-lg font-semibold text-ink">Recent Properties</h3>
+                      <Link to="/properties" className="text-gold hover:text-secondary text-sm">
                         View All
                       </Link>
                     </div>
@@ -169,7 +169,7 @@ const Dashboard: React.FC = () => {
                             className="w-12 h-12 object-cover rounded-md"
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-medium text-ink truncate">
                               {property.title}
                             </p>
                             <p className="text-sm text-gray-500">
@@ -178,8 +178,8 @@ const Dashboard: React.FC = () => {
                           </div>
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                             property.status === 'for-sale'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
+                              ? 'bg-navy text-white'
+                              : 'bg-gold/15 text-navy'
                           }`}>
                             {property.status === 'for-sale' ? 'For Sale' : 'For Rent'}
                           </span>
@@ -191,8 +191,8 @@ const Dashboard: React.FC = () => {
                   {/* Recent Transactions */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Recent Transactions</h3>
-                      <button className="text-blue-600 hover:text-blue-700 text-sm">
+                      <h3 className="text-lg font-semibold text-ink">Recent Transactions</h3>
+                      <button className="text-gold hover:text-secondary text-sm">
                         View All
                       </button>
                     </div>
@@ -200,7 +200,7 @@ const Dashboard: React.FC = () => {
                       {transactions.slice(0, 3).map((transaction) => (
                         <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div>
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-ink">
                               Property Purchase
                             </p>
                             <p className="text-sm text-gray-500">
@@ -208,12 +208,12 @@ const Dashboard: React.FC = () => {
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-ink">
                               ${transaction.amount.usd.toLocaleString()}
                             </p>
                             <span className={`text-xs px-2 py-1 rounded-full ${
                               transaction.status === 'completed'
-                                ? 'bg-green-100 text-green-800'
+                                ? 'bg-gold/15 text-navy'
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}>
                               {transaction.status}
@@ -227,25 +227,27 @@ const Dashboard: React.FC = () => {
 
                 {/* Quick Actions */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                  <h3 className="text-lg font-semibold text-ink mb-4">Quick Actions</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Link
-                      to="/add-property"
-                      className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                    >
-                      <Plus className="h-6 w-6 text-gray-400 mr-2" />
-                      <span className="text-gray-600">Add New Property</span>
-                    </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/add-property"
+                        className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gold hover:bg-gold/10 transition-colors"
+                      >
+                        <Plus className="h-6 w-6 text-gray-400 mr-2" />
+                        <span className="text-gray-600">Add New Property</span>
+                      </Link>
+                    )}
                     <Link
                       to="/properties"
-                      className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                      className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gold hover:bg-gold/10 transition-colors"
                     >
                       <Eye className="h-6 w-6 text-gray-400 mr-2" />
                       <span className="text-gray-600">Browse Properties</span>
                     </Link>
                     <Link
                       to="/properties/map"
-                      className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                      className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gold hover:bg-gold/10 transition-colors"
                     >
                       <TrendingUp className="h-6 w-6 text-gray-400 mr-2" />
                       <span className="text-gray-600">View Map</span>
@@ -259,14 +261,16 @@ const Dashboard: React.FC = () => {
             {activeTab === 'properties' && (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">My Properties</h3>
-                  <Link
-                    to="/add-property"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Property
-                  </Link>
+                  <h3 className="text-lg font-semibold text-ink">My Properties</h3>
+                  {user.role === 'admin' && (
+                    <Link
+                      to="/add-property"
+                      className="bg-navy text-white px-4 py-2 rounded-md hover:bg-secondary transition-colors flex items-center"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Property
+                    </Link>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -278,19 +282,19 @@ const Dashboard: React.FC = () => {
                         className="w-full h-48 object-cover"
                       />
                       <div className="p-4">
-                        <h4 className="font-medium text-gray-900 mb-2">{property.title}</h4>
+                        <h4 className="font-medium text-ink mb-2">{property.title}</h4>
                         <div className="flex items-center text-gray-600 mb-2">
                           <MapPin className="h-4 w-4 mr-1" />
-                          <span className="text-sm">{property.location.city}</span>
+                          <span className="text-sm">{property.location.address.split(',').pop()?.trim() || property.location.city}, {property.location.city}</span>
                         </div>
                         <div className="flex items-center justify-between mb-4">
-                          <span className="text-lg font-bold text-gray-900">
+                          <span className="text-lg font-bold text-gold">
                             ${property.price.usd.toLocaleString()}
                           </span>
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                             property.status === 'for-sale'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
+                              ? 'bg-navy text-white'
+                              : 'bg-gold/15 text-navy'
                           }`}>
                             {property.status === 'for-sale' ? 'For Sale' : 'For Rent'}
                           </span>
@@ -298,7 +302,7 @@ const Dashboard: React.FC = () => {
                         <div className="flex space-x-2">
                           <Link
                             to={`/property/${property.id}`}
-                            className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-md hover:bg-blue-700 transition-colors text-sm flex items-center justify-center"
+                            className="flex-1 bg-navy text-white py-2 px-3 rounded-md hover:bg-secondary transition-colors text-sm flex items-center justify-center"
                           >
                             <Eye className="h-4 w-4 mr-1" />
                             View
@@ -316,14 +320,20 @@ const Dashboard: React.FC = () => {
                 {userProperties.length === 0 && (
                   <div className="text-center py-12">
                     <Home className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No properties yet</h3>
-                    <p className="text-gray-600 mb-4">Start by adding your first property to the platform</p>
-                    <Link
-                      to="/add-property"
-                      className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors inline-block"
-                    >
-                      Add Your First Property
-                    </Link>
+                    <h3 className="text-lg font-medium text-ink mb-2">No properties yet</h3>
+                    <p className="text-gray-600 mb-4">
+                      {user.role === 'admin'
+                        ? 'Start by adding your first property to the platform'
+                        : 'Contact an admin to list a property for you'}
+                    </p>
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/add-property"
+                        className="bg-navy text-white px-6 py-2 rounded-md hover:bg-secondary transition-colors inline-block"
+                      >
+                        Add Your First Property
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
@@ -332,7 +342,7 @@ const Dashboard: React.FC = () => {
             {/* Transactions Tab */}
             {activeTab === 'transactions' && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Transaction History</h3>
+                <h3 className="text-lg font-semibold text-ink mb-6">Transaction History</h3>
                 
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
@@ -360,19 +370,19 @@ const Dashboard: React.FC = () => {
                         const property = properties.find(p => p.id === transaction.propertyId);
                         return (
                           <tr key={transaction.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-ink">
                               #{transaction.id.slice(-6)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">
                               {property?.title || 'Unknown Property'}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">
                               ${transaction.amount.usd.toLocaleString()}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                                 transaction.status === 'completed'
-                                  ? 'bg-green-100 text-green-800'
+                                  ? 'bg-gold/15 text-navy'
                                   : transaction.status === 'pending'
                                   ? 'bg-yellow-100 text-yellow-800'
                                   : 'bg-red-100 text-red-800'
@@ -393,7 +403,7 @@ const Dashboard: React.FC = () => {
                 {transactions.length === 0 && (
                   <div className="text-center py-12">
                     <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions yet</h3>
+                    <h3 className="text-lg font-medium text-ink mb-2">No transactions yet</h3>
                     <p className="text-gray-600">Your transaction history will appear here</p>
                   </div>
                 )}
@@ -403,11 +413,11 @@ const Dashboard: React.FC = () => {
             {/* Analytics Tab */}
             {activeTab === 'analytics' && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Analytics & Insights</h3>
+                <h3 className="text-lg font-semibold text-ink mb-6">Analytics & Insights</h3>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="bg-gray-50 rounded-lg p-6">
-                    <h4 className="font-medium text-gray-900 mb-4">Property Performance</h4>
+                    <h4 className="font-medium text-ink mb-4">Property Performance</h4>
                     <div className="h-64 flex items-center justify-center text-gray-500">
                       <div className="text-center">
                         <TrendingUp className="h-12 w-12 mx-auto mb-2" />
@@ -417,7 +427,7 @@ const Dashboard: React.FC = () => {
                   </div>
                   
                   <div className="bg-gray-50 rounded-lg p-6">
-                    <h4 className="font-medium text-gray-900 mb-4">Revenue Trends</h4>
+                    <h4 className="font-medium text-ink mb-4">Revenue Trends</h4>
                     <div className="h-64 flex items-center justify-center text-gray-500">
                       <div className="text-center">
                         <DollarSign className="h-12 w-12 mx-auto mb-2" />
