@@ -94,7 +94,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch, initialFilters 
       <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 ${showAdvanced ? 'opacity-0 h-0 invisible' : 'opacity-100 h-auto visible'}`}>
         <div className="md:col-span-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Search className="absolute left-3 top-1/4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
               name="search"
