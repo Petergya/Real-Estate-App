@@ -111,7 +111,7 @@ const HomePage: React.FC = () => {
       )}
 
       {/* Hero */}
-      <section className="relative w-full h-[420px] md:h-[520px] flex items-center justify-center">
+      <section className="relative w-full h-[420px] md:h-[520px] flex items-center justify-center bg-white">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
           {propertyImages.map((img, idx) => (
             <img
@@ -121,7 +121,7 @@ const HomePage: React.FC = () => {
               className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
             />
           ))}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60 z-20" />
+          <div className="absolute inset-0 bg-white/5 z-20" />
         </div>
         <button onClick={goToPrev} className="absolute left-4 top-1/2 -translate-y-1/2 z-40 bg-white/90 hover:bg-white rounded-full p-2.5 shadow-xl transition-all hover:scale-110" aria-label="Previous"><span className="text-xl">&#8592;</span></button>
         <button onClick={goToNext} className="absolute right-4 top-1/2 -translate-y-1/2 z-40 bg-white/90 hover:bg-white rounded-full p-2.5 shadow-xl transition-all hover:scale-110" aria-label="Next"><span className="text-xl">&#8594;</span></button>
@@ -131,10 +131,10 @@ const HomePage: React.FC = () => {
           ))}
         </div>
         <div className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center h-full">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg opacity-0 animate-fade-in-up animate-delay-100 animate-fill-both">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 text-[#14243A] drop-shadow-sm opacity-0 animate-fade-in-up animate-delay-100 animate-fill-both">
             Find Your Dream Property
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-white/95 drop-shadow opacity-0 animate-fade-in-up animate-delay-300 animate-fill-both max-w-2xl">
+          <p className="text-xl md:text-2xl mb-8 text-[#526477] drop-shadow-sm opacity-0 animate-fade-in-up animate-delay-300 animate-fill-both max-w-2xl">
             Buy, rent, or invest in premium properties across Nigeria
           </p>
           <div className="max-w-4xl w-full opacity-0 animate-fade-in-up animate-delay-500 animate-fill-both">
@@ -305,7 +305,7 @@ const HomePage: React.FC = () => {
                   )}
                   <Link
                     to={`/property/${property.id}`}
-                    className="w-full inline-flex items-center justify-center gap-2 bg-gold text-navy py-2.5 px-4 rounded-xl hover:bg-gold/90 transition-colors font-medium"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#123B7A] text-white hover:text-white py-2.5 px-4 rounded-xl hover:bg-[#0D2D5E] focus-visible:bg-[#0D2D5E] transition-colors font-medium"
                   >
                     View Details <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -314,7 +314,7 @@ const HomePage: React.FC = () => {
             ))}
           </div>
           <div className="text-center mt-12">
-            <Link to="/properties" className="inline-flex items-center gap-2 bg-gold text-navy px-8 py-3 rounded-xl hover:bg-gold/90 transition-colors font-medium">
+            <Link to="/properties" className="inline-flex items-center gap-2 bg-[#123B7A] text-white hover:text-white px-8 py-3 rounded-xl hover:bg-[#0D2D5E] focus-visible:bg-[#0D2D5E] transition-colors font-medium">
               View All Properties <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -380,7 +380,7 @@ const HomePage: React.FC = () => {
             <Link to="/properties" className="inline-flex items-center justify-center gap-2 bg-white text-primary px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
               Browse Properties <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link to="/register" className="inline-flex items-center justify-center gap-2 bg-gold text-navy px-8 py-3 rounded-xl font-semibold hover:bg-gold/90 transition-colors">
+            <Link to="/register" className="inline-flex items-center justify-center gap-2 bg-gold text-navy px-8 py-3 rounded-xl font-semibold hover:bg-gold-hover transition-colors">
               Create Free Account
             </Link>
           </div>

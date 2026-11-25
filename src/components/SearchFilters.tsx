@@ -87,21 +87,21 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch, initialFilters 
 
   return (
     <div className={`rounded-lg shadow-md p-6 transition-all duration-300 ${showAdvanced
-        ? 'bg-black/30 backdrop-blur-lg border border-gray-100/20'
-        : 'bg-white'
+        ? 'bg-[#E8F6FC]/30 backdrop-blur-sm border border-[#DCE7F0]/40'
+        : 'bg-[#E8F6FC]/30 backdrop-blur-sm border border-[#DCE7F0]/40'
       }`}>
       {/* Basic Search */}
       <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 ${showAdvanced ? 'opacity-0 h-0 invisible' : 'opacity-100 h-auto visible'}`}>
         <div className="md:col-span-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Search className="absolute left-3 top-1/4 transform -translate-y-1/2 text-[#123B7A] h-5 w-5" />
             <input
               type="text"
               name="search"
               value={filters.search}
               onChange={handleInputChange}
               placeholder="Search properties, locations..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent text-gray-800 placeholder-gray-500"
+              className="w-full pl-10 pr-4 py-2 border border-[#DCE7F0] rounded-md focus:ring-2 focus:ring-[#00B8D9] focus:border-transparent text-[#14243A] bg-white placeholder-gray-500"
             />
           </div>
         </div>
@@ -123,7 +123,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch, initialFilters 
         <div className="flex space-x-2">
           <button
             onClick={handleSearch}
-            className="flex-1 bg-navy text-white py-2 px-4 rounded-md hover:bg-secondary transition-colors flex items-center justify-center"
+            className="flex-1 bg-[#00B8D9] text-white py-2 px-4 rounded-md hover:bg-[#0D2D5E] transition-colors flex items-center justify-center"
           >
             <Search className="h-4 w-4 mr-2" />
             Search

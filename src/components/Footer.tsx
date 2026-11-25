@@ -32,7 +32,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-navy text-white/80">
+    <footer className="bg-[#0D2D5E] text-white/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
           <div className="lg:col-span-2">
@@ -121,7 +121,7 @@ const Footer: React.FC = () => {
                   className="flex-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent"
                   required
                 />
-                <button type="submit" className="px-4 py-2 rounded-lg bg-gold text-navy hover:bg-gold/90 transition-colors flex items-center gap-1" aria-label="Subscribe">
+                <button type="submit" className="px-4 py-2 rounded-lg bg-gold text-navy hover:bg-gold-hover transition-colors flex items-center gap-1" aria-label="Subscribe">
                   <Send className="h-4 w-4" />
                 </button>
               </form>

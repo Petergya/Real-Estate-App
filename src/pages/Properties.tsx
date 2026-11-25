@@ -229,7 +229,7 @@ const Properties: React.FC = () => {
                 
                 <Link
                   to={`/property/${property.id}`}
-                  className="w-full bg-gold text-navy py-2 px-4 rounded-md hover:bg-gold/90 transition-colors text-center block"
+                  className="w-full bg-navy text-white hover:text-white py-2 px-4 rounded-md hover:bg-secondary focus-visible:bg-secondary transition-colors text-center block"
                 >
                   View Details
                 </Link>

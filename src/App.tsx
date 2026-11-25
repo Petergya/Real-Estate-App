@@ -35,7 +35,7 @@ function AppContent() {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
-    <div className={`flex flex-col min-h-screen ${isAdminRoute ? 'bg-slate-900' : 'bg-light'}`}>
+    <div className={`flex flex-col min-h-screen ${isAdminRoute ? 'bg-slate-900' : 'bg-white'}`}>
       {!isAdminRoute && <Navbar />}
               <main className={`flex-grow ${!isAdminRoute ? 'pt-16' : ''}`}>
                 <Toaster position="bottom-right" />
