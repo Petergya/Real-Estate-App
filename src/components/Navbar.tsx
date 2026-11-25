@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Search, User, Menu, X, Building2, LogOut, Settings, Map, Camera, Info, Mail } from 'lucide-react';
+import { Home, Search, User, Menu, X, Building2, LogOut, Settings, Map, Camera, Info, Mail, MessageSquare } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
 
 const Navbar: React.FC = () => {
@@ -48,6 +48,11 @@ const Navbar: React.FC = () => {
             {user && user.role !== 'admin' && (
               <Link to="/dashboard" className="px-4 py-2 rounded-lg text-[#123B7A]/80 hover:text-[#123B7A] hover:bg-[#E8F6FC] transition-colors font-medium">
                 Dashboard
+              </Link>
+            )}
+            {user && (
+              <Link to="/messages" className="px-4 py-2 rounded-lg text-[#123B7A]/80 hover:text-[#123B7A] hover:bg-[#E8F6FC] transition-colors font-medium">
+                Messages
               </Link>
             )}
             <Link to="/media-demo" className="px-4 py-2 rounded-lg text-[#123B7A]/80 hover:text-[#123B7A] hover:bg-[#E8F6FC] transition-colors font-medium flex items-center gap-1.5">
@@ -150,6 +155,12 @@ const Navbar: React.FC = () => {
                 <Link to="/dashboard" className="flex items-center gap-2 px-4 py-3 rounded-lg text-[#123B7A] hover:bg-[#E8F6FC]" onClick={() => setIsMenuOpen(false)}>
                   <User className="h-4 w-4" />
                   <span>Dashboard</span>
+                </Link>
+              )}
+              {user && (
+                <Link to="/messages" className="flex items-center gap-2 px-4 py-3 rounded-lg text-[#123B7A] hover:bg-[#E8F6FC]" onClick={() => setIsMenuOpen(false)}>
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Messages</span>
                 </Link>
               )}
               <Link to="/media-demo" className="flex items-center gap-2 px-4 py-3 rounded-lg text-[#123B7A] hover:bg-[#E8F6FC]" onClick={() => setIsMenuOpen(false)}>

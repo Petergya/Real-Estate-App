@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Sheet from './Sheet';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { storage } from '../lib/firebase';
 
 import type { Property } from '../contexts/PropertyContext';
 
@@ -58,6 +60,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
     },
     amenities: editProperty?.amenities || [],
     images: editProperty?.images || [],
+    videos: editProperty?.videos || [],
     plotType: editProperty?.plotType || '',
     topography: editProperty?.topography || '',
     hasSurveyPlan: editProperty?.hasSurveyPlan || false,
@@ -92,20 +95,41 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
       return;
     }
 
-    const keys = name.split('.');
+    const [section, key, nestedKey] = name.split('.');
     setFormData(prev => {
-      const next: any = { ...prev };
-      let cursor: any = next;
-
-      for (let i = 0; i < keys.length - 1; i++) {
-        const k = keys[i];
-        const existing = cursor?.[k];
-        cursor[k] = typeof existing === 'object' && existing !== null ? { ...existing } : {};
-        cursor = cursor[k];
+      if (section === 'price' && (key === 'usd' || key === 'ngn') && typeof nextValue === 'string') {
+        return { ...prev, price: { ...prev.price, [key]: nextValue } };
       }
 
-      cursor[keys[keys.length - 1]] = nextValue;
-      return next;
+      if (section === 'location' && key === 'coordinates' && (nestedKey === 'lat' || nestedKey === 'lng') && typeof nextValue === 'string') {
+        return {
+          ...prev,
+          location: {
+            ...prev.location,
+            coordinates: { ...prev.location.coordinates, [nestedKey]: nextValue }
+          }
+        };
+      }
+
+      if (section === 'location' && typeof nextValue === 'string') {
+        if (key === 'address' || key === 'city' || key === 'state') {
+          return { ...prev, location: { ...prev.location, [key]: nextValue } };
+        }
+      }
+
+      if (section === 'features') {
+        if (key === 'area' && typeof nextValue === 'string') {
+          return { ...prev, features: { ...prev.features, area: nextValue } };
+        }
+        if ((key === 'bedrooms' || key === 'bathrooms') && typeof nextValue === 'string') {
+          return { ...prev, features: { ...prev.features, [key]: nextValue } };
+        }
+        if ((key === 'furnished' || key === 'petFriendly' || key === 'parking') && typeof nextValue === 'boolean') {
+          return { ...prev, features: { ...prev.features, [key]: nextValue } };
+        }
+      }
+
+      return prev;
     });
   };
 
@@ -145,42 +169,71 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
     }));
   };
 
-  const handlePhotoTaken = (photoData: string) => {
+  const removeVideo = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, photoData]
+      videos: prev.videos.filter((_: string, i: number) => i !== index)
     }));
-    toast.success('Photo added successfully!');
   };
 
-  const handleVideoRecorded = (videoBlob: Blob) => {
-    // Convert video blob to data URL for storage
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const videoDataUrl = e.target?.result as string;
+  const uploadMedia = async (file: Blob, fileName: string) => {
+    if (!storage || !user) throw new Error('Sign in and configure Firebase Storage before uploading media.');
+    if (file.size > 20 * 1024 * 1024) throw new Error('Media files must be smaller than 20 MB.');
+    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '-');
+    const fileRef = ref(storage, `propertyMedia/${user.id}/${Date.now()}-${safeName}`);
+    await uploadBytes(fileRef, file, { contentType: file.type });
+    return getDownloadURL(fileRef);
+  };
+
+  const handlePhotoTaken = async (photoData: string) => {
+    try {
+      const photo = await fetch(photoData).then((response) => response.blob());
+      const imageUrl = await uploadMedia(photo, 'camera-photo.jpg');
       setFormData(prev => ({
         ...prev,
-        images: [...prev.images, videoDataUrl]
+        images: [...prev.images, imageUrl]
       }));
-      toast.success('Video added successfully!');
-    };
-    reader.readAsDataURL(videoBlob);
+      toast.success('Photo uploaded successfully!');
+    } catch (error) {
+      console.error('Photo upload failed', error);
+      toast.error(error instanceof Error ? error.message : 'Photo upload failed.');
+    }
   };
 
-  const handleFileUploaded = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const fileDataUrl = e.target?.result as string;
+  const handleVideoRecorded = async (videoBlob: Blob) => {
+    try {
+      const videoUrl = await uploadMedia(videoBlob, 'recorded-video.webm');
       setFormData(prev => ({
         ...prev,
-        images: [...prev.images, fileDataUrl]
+        videos: [...prev.videos, videoUrl]
       }));
-      toast.success(`${file.type.startsWith('image/') ? 'Image' : 'File'} uploaded successfully!`);
-    };
-    reader.readAsDataURL(file);
+      toast.success('Video uploaded successfully!');
+    } catch (error) {
+      console.error('Video upload failed', error);
+      toast.error(error instanceof Error ? error.message : 'Video upload failed.');
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileUploaded = async (file: File) => {
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      toast.error('Upload an image or video file.');
+      return;
+    }
+    try {
+      const mediaUrl = await uploadMedia(file, file.name);
+      if (file.type.startsWith('video/')) {
+        setFormData(prev => ({ ...prev, videos: [...prev.videos, mediaUrl] }));
+      } else {
+        setFormData(prev => ({ ...prev, images: [...prev.images, mediaUrl] }));
+      }
+      toast.success(`${file.type.startsWith('image/') ? 'Image' : 'Video'} uploaded successfully!`);
+    } catch (error) {
+      console.error('Media upload failed', error);
+      toast.error(error instanceof Error ? error.message : 'Media upload failed.');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) {
@@ -244,10 +297,10 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
     try {
       const payload = propertyData as Omit<Property, 'id' | 'createdAt' | 'updatedAt'>;
       if (editProperty) {
-        updateProperty(editProperty.id, payload);
+        await updateProperty(editProperty.id, payload);
         toast.success('Property updated successfully!');
       } else {
-        addProperty(payload);
+        await addProperty(payload);
         toast.success('Property added successfully!');
       }
       
@@ -256,8 +309,9 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ onClose, editProperty }) =>
       } else {
         navigate('/dashboard');
       }
-    } catch {
-      toast.error('Failed to save property. Please try again.');
+    } catch (error) {
+      console.error('Property could not be saved', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to save property. Please try again.');
     }
   };
 
@@ -785,6 +839,32 @@ https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg"
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {formData.videos.length > 0 && (
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  Property Videos ({formData.videos.length}):
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {formData.videos.map((video: string, index: number) => (
+                    <div key={index} className="relative">
+                      <video
+                        src={video}
+                        controls
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(index)}
+                        aria-label={`Remove property video ${index + 1}`}
                         className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
                       >
                         <X className="h-3 w-3" />

@@ -28,6 +28,7 @@ import Terms from './pages/Terms';
 // import { Sheet } from 'lucide-react';
  import Schedule from './pages/schedule';
 import MediaDemo from './pages/MediaDemo';
+import Messages from './pages/Messages';
 //  import CameraTest from './pages/cam';
 
 function AppContent() {
@@ -55,6 +56,7 @@ function AppContent() {
                   <Route path="/payment/:propertyId" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                   <Route path="/schedule" element={<ProtectedRoute><Schedule /></ProtectedRoute>} />
+                  <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                   <Route path="/media-demo" element={<MediaDemo />} />
                   <Route path="/about" element={<AboutUs />} />
                   <Route path="/contact" element={<Contact />} />

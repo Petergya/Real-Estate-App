@@ -150,10 +150,14 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, X, User, Mail, Phone } from 'lucide-react';
+import { httpsCallable } from 'firebase/functions';
+import { useAuth } from '../contexts/AuthContext';
+import { functions } from '../lib/firebase';
 
 const ScheduleViewing: React.FC = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Get property data from navigation state
   const property = state?.propertyId ? {
@@ -163,8 +167,8 @@ const ScheduleViewing: React.FC = () => {
   } : null;
 
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+    name: user?.name || '',
+    email: user?.email || '',
     phone: '',
     date: '',
     time: '',
@@ -173,6 +177,7 @@ const ScheduleViewing: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   // Generate time slots (every 30 minutes from 9AM to 5PM)
   const timeSlots = [];
@@ -195,24 +200,33 @@ const ScheduleViewing: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      navigate('/login', { state: { from: '/schedule' } });
+      return;
+    }
+    if (!functions || !property) {
+      setSubmitError('Firebase is not configured. Viewing requests cannot be saved yet.');
+      return;
+    }
     setIsSubmitting(true);
-    
+    setSubmitError('');
     try {
-      // Here you would typically make an API call
-      console.log('Scheduling viewing for property:', property?.id);
-      console.log('Form data:', formData);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      const requestViewing = httpsCallable(functions, 'schedulePropertyViewing');
+      await requestViewing({
+        propertyId: property.id,
+        date: formData.date,
+        time: formData.time,
+        message: formData.message,
+        phone: formData.phone,
+      });
       setIsSuccess(true);
-      // Reset form after 3 seconds
       setTimeout(() => {
         setIsSuccess(false);
-        navigate(-1); // Go back to previous page
+        navigate(-1);
       }, 3000);
     } catch (error) {
-      console.error('Error scheduling viewing:', error);
+      console.error('Error scheduling viewing', error);
+      setSubmitError(error instanceof Error ? error.message : 'Unable to save the viewing request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -263,6 +277,7 @@ const ScheduleViewing: React.FC = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
+          {submitError && <p role="alert" className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{submitError}</p>}
           <div className="space-y-5">
             {/* Contact Information */}
             <div>

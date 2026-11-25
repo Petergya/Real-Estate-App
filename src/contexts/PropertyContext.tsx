@@ -389,7 +389,9 @@
 
 
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { db, firebaseConfigured } from '../lib/firebase';
 
 export interface Property {
   id: string;
@@ -467,9 +469,9 @@ interface PropertyContextType {
   properties: Property[];
   searchProperties: (filters: PropertyFilters) => Property[];
   getProperty: (id: string) => Property | undefined;
-  addProperty: (property: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateProperty: (id: string, updates: Partial<Property>) => void;
-  deleteProperty: (id: string) => void;
+  addProperty: (property: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateProperty: (id: string, updates: Partial<Property>) => Promise<void>;
+  deleteProperty: (id: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -484,7 +486,7 @@ export const useProperty = () => {
 };
 
 // Mock data with unique IDs and more images
-const mockProperties: Property[] = [
+export const mockProperties: Property[] = [
   {
     id: '1',
     title: 'Luxury 3-Bedroom Apartment in University Quarters, Jos',
@@ -1217,8 +1219,22 @@ const mockProperties: Property[] = [
 ];
 
 export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [properties, setProperties] = useState<Property[]>(mockProperties);
-  const [isLoading, setIsLoading] = useState(false);
+  const [properties, setProperties] = useState<Property[]>(firebaseConfigured ? [] : mockProperties);
+  const [isLoading, setIsLoading] = useState(firebaseConfigured);
+
+  useEffect(() => {
+    if (!db) return;
+    return onSnapshot(collection(db, 'properties'), (snapshot) => {
+      setProperties(snapshot.docs.map((propertyDoc) => ({
+        id: propertyDoc.id,
+        ...propertyDoc.data(),
+      }) as Property));
+      setIsLoading(false);
+    }, (error) => {
+      console.error('Unable to load properties from Firebase', error);
+      setIsLoading(false);
+    });
+  }, []);
 
   const searchProperties = (filters: PropertyFilters) => {
     const minPrice = filters.minPrice ? Number(filters.minPrice) : undefined;
@@ -1226,12 +1242,22 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const bedrooms = filters.bedrooms ? Number.parseInt(filters.bedrooms, 10) : undefined;
 
     return properties.filter(property => {
+      const search = filters.search?.toLowerCase().trim();
+      const location = filters.location?.toLowerCase().trim();
       if (filters.type && property.type !== filters.type) return false;
       if (filters.status && property.status !== filters.status) return false;
       if (Number.isFinite(minPrice) && property.price.usd < (minPrice as number)) return false;
       if (Number.isFinite(maxPrice) && property.price.usd > (maxPrice as number)) return false;
       if (Number.isFinite(bedrooms) && property.features.bedrooms !== bedrooms) return false;
       if (filters.city && !property.location.city.toLowerCase().includes(filters.city.toLowerCase())) return false;
+      if (search && !`${property.title} ${property.description} ${property.location.city} ${property.location.state}`.toLowerCase().includes(search)) return false;
+      if (location && !`${property.location.address} ${property.location.city} ${property.location.state}`.toLowerCase().includes(location)) return false;
+      if (filters.bathrooms && property.features.bathrooms !== Number(filters.bathrooms)) return false;
+      if (filters.furnished === 'true' && !property.features.furnished) return false;
+      if (filters.furnished === 'false' && property.features.furnished) return false;
+      if (filters.petFriendly === 'true' && !property.features.petFriendly) return false;
+      if (filters.parking === 'true' && !property.features.parking) return false;
+      if (filters.amenities?.some((amenity) => !property.amenities.includes(amenity))) return false;
       return true;
     });
   };
@@ -1240,38 +1266,48 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return properties.find(property => property.id === id);
   };
 
-  const addProperty = (propertyData: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addProperty = async (propertyData: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!db) throw new Error('Firebase is not configured. Property listings cannot be saved yet.');
     setIsLoading(true);
-    setTimeout(() => {
-      const newProperty: Property = {
+    try {
+      const timestamp = new Date().toISOString();
+      await addDoc(collection(db, 'properties'), {
         ...propertyData,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setProperties(prev => [...prev, newProperty]);
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+    } catch (error) {
+      console.error('Failed to save property to Firebase', error);
+      throw error;
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
-  const updateProperty = (id: string, updates: Partial<Property>) => {
+  const updateProperty = async (id: string, updates: Partial<Property>) => {
+    if (!db) throw new Error('Firebase is not configured. Property listings cannot be updated yet.');
     setIsLoading(true);
-    setTimeout(() => {
-      setProperties(prev => prev.map(property => 
-        property.id === id 
-          ? { ...property, ...updates, updatedAt: new Date().toISOString() }
-          : property
-      ));
+    try {
+      await updateDoc(doc(db, 'properties', id), { ...updates, updatedAt: new Date().toISOString() });
+    } catch (error) {
+      console.error('Failed to update property in Firebase', error);
+      throw error;
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
-  const deleteProperty = (id: string) => {
+  const deleteProperty = async (id: string) => {
+    if (!db) throw new Error('Firebase is not configured. Property listings cannot be deleted yet.');
     setIsLoading(true);
-    setTimeout(() => {
-      setProperties(prev => prev.filter(property => property.id !== id));
+    try {
+      await deleteDoc(doc(db, 'properties', id));
+    } catch (error) {
+      console.error('Failed to delete property from Firebase', error);
+      throw error;
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (

@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function activeUser() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status != 'suspended';
+    }
+
+    function isAdmin() {
+      return activeUser() && request.auth.token.admin == true;
+    }
+
+    function isConversationParticipant() {
+      return activeUser() && request.auth.uid in resource.data.participants;
+    }
+
+    match /users/{userId} {
+      allow read: if activeUser() && (request.auth.uid == userId || isAdmin());
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.role in ['buyer', 'agent', 'landlord']
+        && request.resource.data.isVerified == false
+        && request.resource.data.kycStatus == 'pending';
+      allow update: if isAdmin() || (
+        activeUser()
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['name', 'phone', 'avatar', 'updatedAt'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /properties/{propertyId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.owner.id == request.auth.uid
+        && request.resource.data.availabilityStatus == 'available';
+      allow update: if isAdmin()
+        || (activeUser() && resource.data.owner.id == request.auth.uid);
+      allow delete: if isAdmin()
+        || (activeUser() && resource.data.owner.id == request.auth.uid);
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if isAdmin()
+        || (activeUser() && resource.data.buyerId == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if activeUser() && request.auth.uid in resource.data.participants;
+      allow create: if false;
+      allow update: if activeUser()
+        && request.auth.uid in resource.data.participants
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['lastMessage', 'updatedAt'])
+        && request.resource.data.lastMessage is string
+        && request.resource.data.lastMessage.size() <= 4000
+        && request.resource.data.updatedAt == request.time;
+
+      match /messages/{messageId} {
+        allow read: if activeUser()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        allow create: if activeUser()
+          && request.resource.data.keys().hasOnly(['senderId', 'senderName', 'text', 'createdAt'])
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.senderName
+            == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.name
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 4000
+          && request.resource.data.createdAt == request.time
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        allow update, delete: if false;
+      }
+    }
+
+    match /contactMessages/{messageId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /appointments/{appointmentId} {
+      allow read: if isAdmin()
+        || (activeUser() && (resource.data.buyerId == request.auth.uid || resource.data.ownerId == request.auth.uid));
+      allow write: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAdmin()
+        || (activeUser() && resource.data.recipientId == request.auth.uid);
+      allow update: if activeUser()
+        && resource.data.recipientId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+        && request.resource.data.read is bool;
+      allow delete: if isAdmin()
+        || (activeUser() && resource.data.recipientId == request.auth.uid);
+      allow create: if false;
+    }
+
+    match /userActivity/{userId} {
+      allow read: if activeUser() && (request.auth.uid == userId || isAdmin());
+      allow create, update: if activeUser()
+        && request.auth.uid == userId
+        && request.resource.data.userId == userId;
+      allow delete: if isAdmin();
+    }
+
+    match /mail/{mailId} {
+      allow read, write: if false;
+    }
+  }
+}

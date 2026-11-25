@@ -1,0 +1,21 @@
+{
+  "name": "habixa-functions",
+  "private": true,
+  "main": "lib/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint src",
+    "set-admin-claim": "node scripts/set-admin-claim.cjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.4.0",
+    "firebase-functions": "^6.4.0",
+    "vite-react-typescript-starter": "file:.."
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  }
+}

@@ -1,5 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { collection, deleteDoc, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import toast from 'react-hot-toast';
 import { useAuth } from './AuthContext';
+import { db, functions } from '../lib/firebase';
 
 export interface Notification {
   id: string;
@@ -9,25 +13,26 @@ export interface Notification {
   timestamp: string;
   read: boolean;
   actionUrl?: string;
-  targetRole?: 'all' | 'admin' | 'user'; // Audience target
+  targetRole?: 'all' | 'admin' | 'user';
+  recipientId: string;
 }
+
+type NewNotification = Omit<Notification, 'id' | 'timestamp' | 'read' | 'recipientId'>;
 
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
-  deleteNotification: (id: string) => void;
+  addNotification: (notification: NewNotification) => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const useNotification = () => {
   const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error('useNotification must be used within a NotificationProvider');
-  }
+  if (!context) throw new Error('useNotification must be used within a NotificationProvider');
   return context;
 };
 
@@ -35,153 +40,71 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Initialize with some mock data if user is present
   useEffect(() => {
-    if (user && notifications.length === 0) {
-      const adminNotifications: Notification[] = [
-        {
-          id: 'admin_1',
-          type: 'payment',
-          title: 'Large Payment Processed',
-          message: 'A payment of $25,000 has been successfully processed for the sale of the Victoria Island property. The funds have been cleared into the escrow account and are pending final disbursement.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-          read: false,
-          actionUrl: '/admin/payments'
-        },
-        {
-          id: 'admin_2',
-          type: 'system',
-          title: 'Security Alert: Suspicious Login Attempt',
-          message: 'Multiple failed login attempts detected from IP address 192.168.1.45 targeting the administrator portal. The IP has been temporarily blocked for 30 minutes in accordance with our security policy.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-          read: false,
-          actionUrl: '/admin/security'
-        },
-        {
-          id: 'admin_3',
-          type: 'message',
-          title: 'Confidential Client Dispute',
-          message: 'A high-priority dispute has been opened by Client #8492 regarding the property boundary lines at the Lekki Phase 1 estate. Legal counsel review is required before proceeding.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-          read: false,
-          actionUrl: '/admin/disputes'
-        }
-      ];
-
-      const userNotifications: Notification[] = [
-        {
-          id: 'user_1',
-          type: 'system',
-          title: 'Scheduled System Maintenance',
-          message: 'The scheduled system maintenance has been completed successfully. We have introduced several new features to improve your experience, including enhanced notification management, improved property listing views, and faster payment processing times. Thank you for your patience.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-          read: false,
-          targetRole: 'user'
-        },
-        {
-          id: 'user_2',
-          type: 'property',
-          title: 'New Properties in Your Area',
-          message: 'We have just added 5 new premium properties in your preferred area of interest. Check out the latest listings to find your next dream home or investment opportunity.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
-          read: false,
-          actionUrl: '/properties',
-          targetRole: 'user'
-        },
-        {
-          id: 'user_3',
-          type: 'message',
-          title: 'Service Upgrade Included!',
-          message: 'Good news! Your basic tier plan has been upgraded with our new faster customer support response times—at no additional cost to you. Enjoy priority handling for all your future inquiries.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-          read: false,
-          targetRole: 'user'
-        }
-      ];
-
-      // Retrieve custom broadcasted notifications from local storage
-      let customNotifications: Notification[] = [];
-      try {
-        const stored = window.localStorage.getItem('custom_notifications');
-        if (stored) {
-          customNotifications = JSON.parse(stored) as Notification[];
-        }
-      } catch (e) {
-        console.error('Failed to parse custom notifications', e);
-      }
-
-      // Filter local storage notifications applicable to the current user's role
-      const applicableCustoms = customNotifications.filter(n => {
-        if (!n.targetRole || n.targetRole === 'all') return true;
-        if (n.targetRole === 'admin' && user.role === 'admin') return true;
-        if (n.targetRole === 'user' && user.role !== 'admin') return true;
-        return false;
-      });
-
-      const baseNotifications = user.role === 'admin' ? adminNotifications : userNotifications;
-      
-      // Combine custom ones with base mocks, sort by timestamp
-      const combined = [...applicableCustoms, ...baseNotifications].sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-
-      setNotifications(combined);
+    if (!db || !user) {
+      setNotifications([]);
+      return;
     }
+
+    return onSnapshot(
+      query(collection(db, 'notifications'), where('recipientId', '==', user.id)),
+      (snapshot) => {
+        const items = snapshot.docs.map((item) => ({
+          id: item.id,
+          ...item.data(),
+        }) as Notification);
+        items.sort((left, right) => right.timestamp.localeCompare(left.timestamp));
+        setNotifications(items);
+      },
+      (error) => {
+        console.error('Unable to load notifications', error);
+        toast.error('Notifications could not be loaded.');
+      },
+    );
   }, [user]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const addNotification = async (notification: NewNotification) => {
+    if (!functions) throw new Error('Firebase Functions are not configured.');
+    const broadcast = httpsCallable(functions, 'broadcastNotification');
+    await broadcast(notification);
+  };
 
-  const addNotification = (notifData: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-    const newNotif: Notification = {
-      ...notifData,
-      id: `custom_${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      read: false
-    };
-    
-    // Save to local storage for persistence across users
+  const markAsRead = async (id: string) => {
+    if (!db || !user) return;
     try {
-      const stored = window.localStorage.getItem('custom_notifications');
-      const existing = stored ? JSON.parse(stored) : [];
-      window.localStorage.setItem('custom_notifications', JSON.stringify([newNotif, ...existing]));
-    } catch (e) {
-      console.error('Failed to save to local storage', e);
-    }
-
-    // Immediately add if it applies to current user (admin sees everything they send, or if it matches their own role logic)
-    if (!newNotif.targetRole || newNotif.targetRole === 'all' || 
-        (newNotif.targetRole === 'admin' && user?.role === 'admin') || 
-        (newNotif.targetRole === 'user' && user?.role !== 'admin')) {
-      setNotifications(prev => [newNotif, ...prev]);
+      await updateDoc(doc(db, 'notifications', id), { read: true });
+    } catch (error) {
+      console.error('Unable to mark notification as read', error);
+      toast.error('Could not update this notification.');
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
+  const markAllAsRead = async () => {
+    const unread = notifications.filter((notification) => !notification.read);
+    const results = await Promise.allSettled(unread.map((notification) => markAsRead(notification.id)));
+    if (results.some((result) => result.status === 'rejected')) {
+      toast.error('Some notifications could not be updated.');
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    );
-  };
-
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  const deleteNotification = async (id: string) => {
+    if (!db || !user) return;
+    try {
+      await deleteDoc(doc(db, 'notifications', id));
+    } catch (error) {
+      console.error('Unable to delete notification', error);
+      toast.error('Could not delete this notification.');
+    }
   };
 
   return (
     <NotificationContext.Provider value={{
       notifications,
-      unreadCount,
+      unreadCount: notifications.filter((notification) => !notification.read).length,
       addNotification,
       markAsRead,
       markAllAsRead,
-      deleteNotification
+      deleteNotification,
     }}>
       {children}
     </NotificationContext.Provider>

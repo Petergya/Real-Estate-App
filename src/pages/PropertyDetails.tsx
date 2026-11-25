@@ -425,6 +425,18 @@ const PropertyDetails: React.FC = () => {
                     ? 'Buy Now'
                     : 'Rent Now'}
                 </button>
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      navigate('/login', { state: { message: 'Please sign in to message the property contact.', from: `/property/${property.id}` } });
+                      return;
+                    }
+                    navigate(`/messages?propertyId=${encodeURIComponent(property.id)}`);
+                  }}
+                  className="w-full border border-primary text-primary py-3 px-4 rounded-md hover:bg-blue-50 transition-colors font-medium"
+                >
+                  Message Property Contact
+                </button>
                 <button 
                   onClick={() => {
                     if (!user) {

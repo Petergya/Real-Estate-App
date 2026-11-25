@@ -1,167 +1,101 @@
-import React, { createContext, useContext, useState } from 'react';
-
-export interface PaymentSplit {
-  owner: {
-    percentage: number;
-    amount: {
-      usd: number;
-      ngn: number;
-    };
-  };
-  agent?: {
-    percentage: number;
-    amount: {
-      usd: number;
-      ngn: number;
-    };
-  };
-  serviceFee: {
-    percentage: number;
-    amount: {
-      usd: number;
-      ngn: number;
-    };
-  };
-}
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { useAuth } from './AuthContext';
+import { db, functions } from '../lib/firebase';
 
 export interface Transaction {
   id: string;
   propertyId: string;
+  propertyTitle: string;
   buyerId: string;
   amount: {
     usd: number;
     ngn: number;
   };
-  currency: 'USD' | 'NGN';
-  paymentMethod: 'card' | 'bank_transfer' | 'ussd' | 'mobile_money' | 'crypto';
-  split?: PaymentSplit;
+  currency: 'NGN';
+  paymentMethod: 'paystack';
+  settlement: 'merchant';
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
-  escrowStatus: 'held' | 'released' | 'disputed';
+  reference: string;
   createdAt: string;
   completedAt?: string;
 }
 
+interface CheckoutSession {
+  authorizationUrl: string;
+  reference: string;
+  transactionId: string;
+}
+
 interface PaymentContextType {
-  calculatePaymentSplit: (amount: number, currency: 'USD' | 'NGN', hasAgent: boolean, agentCommission?: number) => PaymentSplit;
-  processPayment: (paymentData: PaymentData) => Promise<Transaction>;
+  processPayment: (propertyId: string) => Promise<CheckoutSession>;
+  verifyPayment: (reference: string) => Promise<'pending' | 'completed' | 'failed'>;
   getTransactionHistory: (userId: string) => Transaction[];
   getAllTransactions: () => Transaction[];
   getTransaction: (id: string) => Transaction | undefined;
-  exchangeRate: { usdToNgn: number; ngnToUsd: number };
 }
 
 const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
 
-export interface PaymentData {
-  propertyId: string;
-  buyerId: string;
-  amount: {
-    usd: number;
-    ngn: number;
-  };
-  currency: 'USD' | 'NGN';
-  paymentMethod: 'card' | 'bank_transfer' | 'ussd' | 'mobile_money' | 'crypto';
-  split?: PaymentSplit;
-  // Additional fields (e.g. contact details, card metadata) are allowed but ignored here
-  [key: string]: unknown;
-}
-
 export const usePayment = () => {
   const context = useContext(PaymentContext);
-  if (!context) {
-    throw new Error('usePayment must be used within a PaymentProvider');
-  }
+  if (!context) throw new Error('usePayment must be used within a PaymentProvider');
   return context;
 };
 
 export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const exchangeRate = { usdToNgn: 1600, ngnToUsd: 0.000625 }; // Mock exchange rate
 
-  const calculatePaymentSplit = (
-    amount: number, 
-    currency: 'USD' | 'NGN', 
-    hasAgent: boolean, 
-    agentCommission: number = 10
-  ): PaymentSplit => {
-    const serviceFeePercentage = 3; // 3% service fee
-    const ownerPercentage = hasAgent ? (100 - agentCommission - serviceFeePercentage) : (100 - serviceFeePercentage);
-
-    const usdAmount = currency === 'USD' ? amount : amount * exchangeRate.ngnToUsd;
-    const ngnAmount = currency === 'NGN' ? amount : amount * exchangeRate.usdToNgn;
-
-    const split: PaymentSplit = {
-      owner: {
-        percentage: ownerPercentage,
-        amount: {
-          usd: (usdAmount * ownerPercentage) / 100,
-          ngn: (ngnAmount * ownerPercentage) / 100
-        }
-      },
-      serviceFee: {
-        percentage: serviceFeePercentage,
-        amount: {
-          usd: (usdAmount * serviceFeePercentage) / 100,
-          ngn: (ngnAmount * serviceFeePercentage) / 100
-        }
-      }
-    };
-
-    if (hasAgent) {
-      split.agent = {
-        percentage: agentCommission,
-        amount: {
-          usd: (usdAmount * agentCommission) / 100,
-          ngn: (ngnAmount * agentCommission) / 100
-        }
-      };
+  useEffect(() => {
+    if (!user || !db) {
+      setTransactions([]);
+      return;
     }
 
-    return split;
+    const transactionsQuery = user.role === 'admin'
+      ? query(collection(db, 'transactions'))
+      : query(collection(db, 'transactions'), where('buyerId', '==', user.id));
+    return onSnapshot(transactionsQuery, (snapshot) => {
+      setTransactions(snapshot.docs.map((transaction) => ({
+        id: transaction.id,
+        ...transaction.data(),
+      }) as Transaction));
+    }, (error) => {
+      console.error('Unable to load payment history', error);
+      setTransactions([]);
+    });
+  }, [user]);
+
+  const processPayment = async (propertyId: string): Promise<CheckoutSession> => {
+    if (!functions) throw new Error('Firebase is not configured. Payments are unavailable until Firebase is connected.');
+    const initializeCheckout = httpsCallable<{ propertyId: string }, CheckoutSession>(functions, 'initializePaystackCheckout');
+    const response = await initializeCheckout({ propertyId });
+    return response.data;
   };
 
-  const processPayment = async (paymentData: PaymentData): Promise<Transaction> => {
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const transaction: Transaction = {
-      id: Date.now().toString(),
-      propertyId: paymentData.propertyId,
-      buyerId: paymentData.buyerId,
-      amount: paymentData.amount,
-      currency: paymentData.currency,
-      paymentMethod: paymentData.paymentMethod,
-      split: paymentData.split,
-      status: 'completed',
-      escrowStatus: 'held',
-      createdAt: new Date().toISOString(),
-      completedAt: new Date().toISOString()
-    };
-
-    setTransactions(prev => [...prev, transaction]);
-    return transaction;
+  const verifyPayment = async (reference: string): Promise<'pending' | 'completed' | 'failed'> => {
+    if (!functions) throw new Error('Firebase is not configured. Payments are unavailable until Firebase is connected.');
+    const verifyCheckout = httpsCallable<{ reference: string }, { status: 'pending' | 'completed' | 'failed' }>(
+      functions,
+      'verifyPaystackCheckout',
+    );
+    const response = await verifyCheckout({ reference });
+    return response.data.status;
   };
 
-  const getTransactionHistory = (userId: string) => {
-    return transactions.filter(transaction => transaction.buyerId === userId);
-  };
-
-  const getAllTransactions = () => {
-    return [...transactions];
-  };
-
-  const getTransaction = (id: string) => {
-    return transactions.find(transaction => transaction.id === id);
-  };
+  const getTransactionHistory = (userId: string) => transactions.filter((transaction) => transaction.buyerId === userId);
+  const getAllTransactions = () => user?.role === 'admin' ? [...transactions] : [];
+  const getTransaction = (id: string) => transactions.find((transaction) => transaction.id === id);
 
   return (
     <PaymentContext.Provider value={{
-      calculatePaymentSplit,
       processPayment,
+      verifyPayment,
       getTransactionHistory,
       getAllTransactions,
       getTransaction,
-      exchangeRate
     }}>
       {children}
     </PaymentContext.Provider>

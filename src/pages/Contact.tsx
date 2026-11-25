@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useNotification } from '../contexts/NotificationContext';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../lib/firebase';
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
-  const { addNotification } = useNotification();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Message sent! We will get back to you soon.');
-    addNotification({
-      type: 'message',
-      title: `Message from ${formData.name}`,
-      message: formData.message,
-    });
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    if (!functions) {
+      toast.error('Contact service is not configured. Please email support@habixaproperties.com directly.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const submitMessage = httpsCallable(functions, 'submitContactMessage');
+      await submitMessage(formData);
+      toast.success('Message sent. We will get back to you soon.');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      console.error('Unable to submit contact message', error);
+      toast.error(error instanceof Error ? error.message : 'Unable to send your message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -107,8 +118,8 @@ const Contact: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gold focus:border-transparent"
                 />
               </div>
-              <button type="submit" className="flex items-center bg-navy text-white px-6 py-3 rounded-md hover:bg-secondary transition-colors">
-                <Send className="h-4 w-4 mr-2" /> Send Message
+              <button type="submit" disabled={isSubmitting} className="flex items-center bg-navy text-white px-6 py-3 rounded-md hover:bg-secondary disabled:opacity-60 transition-colors">
+                <Send className="h-4 w-4 mr-2" /> {isSubmitting ? 'Sending…' : 'Send Message'}
               </button>
             </form>
           </div>

@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useProperty } from '../contexts/PropertyContext';
 import { usePayment } from '../contexts/PaymentContext';
+import { db, functions } from '../lib/firebase';
 import {
   Users,
   Home,
@@ -39,6 +43,15 @@ interface ManagedUser {
   status: 'active' | 'invited' | 'suspended';
 }
 
+interface SupportTicket {
+  id: string;
+  subject: string;
+  user: string;
+  status: string;
+  date: string;
+  message: string;
+}
+
 const AdminDashboard: React.FC = () => {
   const { user, activityLogs, logout } = useAuth();
   const { properties, deleteProperty, getProperty } = useProperty();
@@ -48,25 +61,11 @@ const AdminDashboard: React.FC = () => {
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [propertyFilter, setPropertyFilter] = useState<string>('all');
   const [transactionFilter, setTransactionFilter] = useState<string>('all');
-  const [managedUsers, setManagedUsers] = useState<ManagedUser[]>(() => {
-    if (typeof window === 'undefined') return [];
-    try {
-      const stored = window.localStorage.getItem('admin_managed_users');
-      if (stored) {
-        return JSON.parse(stored) as ManagedUser[];
-      }
-    } catch {
-      // ignore
-    }
-    return [
-      { id: '1', name: 'Current Admin', email: user?.email || 'admin@example.com', role: 'admin', status: 'active' },
-      { id: '2', name: 'Jane Doe', email: 'jane@example.com', role: 'agent', status: 'active' },
-      { id: '3', name: 'Michael Smith', email: 'michael@example.com', role: 'buyer', status: 'active' },
-    ];
-  });
+  const [managedUsers, setManagedUsers] = useState<ManagedUser[]>([]);
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
+  const [inviteRole, setInviteRole] = useState<ManagedUserRole>('buyer');
   
   // Notification form state
   const [notifTitle, setNotifTitle] = useState('');
@@ -74,10 +73,7 @@ const AdminDashboard: React.FC = () => {
   const [notifType, setNotifType] = useState<Notification['type']>('system');
   const [notifRole, setNotifRole] = useState<'all' | 'admin' | 'user'>('all');
   const [notifStatus, setNotifStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [supportTickets] = useState([
-    { id: '1', subject: 'Cannot upload property images', user: 'john@email.com', status: 'open', date: '2024-02-15' },
-    { id: '2', subject: 'Payment not reflecting', user: 'mary@email.com', status: 'in progress', date: '2024-02-14' },
-  ]);
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
 
   const navigate = useNavigate();
   const allTransactions = getAllTransactions();
@@ -114,20 +110,39 @@ const AdminDashboard: React.FC = () => {
   }, [activityLogs, managedUsers]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      window.localStorage.setItem('admin_managed_users', JSON.stringify(managedUsers));
-    } catch {
-      // ignore
-    }
-  }, [managedUsers]);
+    if (!functions || user?.role !== 'admin') return;
+    const listUsers = httpsCallable<undefined, { users: ManagedUser[] }>(functions, 'listManagedUsers');
+    void listUsers().then(({ data }) => setManagedUsers(data.users)).catch((error: unknown) => {
+      console.error('Unable to load managed users', error);
+      toast.error('User list could not be loaded.');
+    });
+  }, [user]);
+
+  useEffect(() => {
+    if (!db || user?.role !== 'admin') return;
+    return onSnapshot(collection(db, 'contactMessages'), (snapshot) => {
+      setSupportTickets(snapshot.docs.map((ticket) => {
+        const data = ticket.data();
+        return {
+          id: ticket.id,
+          subject: data.subject || '(no subject)',
+          user: data.email || 'Unknown',
+          status: data.status || 'new',
+          date: data.createdAt || '',
+          message: data.message || '',
+        };
+      }).sort((left, right) => right.date.localeCompare(left.date)));
+    }, (error) => {
+      console.error('Unable to load support messages', error);
+      toast.error('Support messages could not be loaded.');
+    });
+  }, [user]);
 
   const stats = {
-    totalUsers: managedUsers.length + 1247,
+    totalUsers: managedUsers.length,
     totalProperties: properties.length,
     totalTransactions: allTransactions.length,
-    totalRevenue: allTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount.usd : 0), 0) || 2450000,
-    totalRevenueNgn: allTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount.ngn : 0), 0) || 3675000000,
+    totalRevenueNgn: allTransactions.reduce((sum, t) => sum + (t.status === 'completed' ? t.amount.ngn : 0), 0),
     pendingApprovals: properties.filter(p => p.availabilityStatus === 'available').length,
     activeListings: properties.filter(p => p.status === 'for-sale' || p.status === 'for-rent').length,
     houses: properties.filter(p => p.type === 'house').length,
@@ -156,17 +171,40 @@ const AdminDashboard: React.FC = () => {
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
-  const handlePropertyAction = (propertyId: string, action: 'approve' | 'reject' | 'delete') => {
-    if (action === 'delete') deleteProperty(propertyId);
+  const handlePropertyAction = async (propertyId: string, action: 'approve' | 'reject' | 'delete') => {
+    if (action === 'delete') {
+      try {
+        await deleteProperty(propertyId);
+      } catch (error) {
+        console.error('Unable to delete property', error);
+        toast.error('Property could not be deleted.');
+      }
+    }
   };
 
-  const updateUserRole = (userId: string, role: ManagedUserRole) => {
-    setManagedUsers(prev => prev.map(u => (u.id === userId ? { ...u, role } : u)));
+  const updateUserRole = async (userId: string, role: ManagedUserRole) => {
+    if (!functions) return;
+    try {
+      const updateRole = httpsCallable(functions, 'setManagedUserRole');
+      await updateRole({ userId, role });
+      setManagedUsers((previous) => previous.map((managedUser) => managedUser.id === userId ? { ...managedUser, role } : managedUser));
+    } catch (error) {
+      console.error('Unable to change user role', error);
+      toast.error(error instanceof Error ? error.message : 'User role could not be changed.');
+    }
   };
 
-  const deleteUser = (userId: string) => {
+  const deleteUser = async (userId: string) => {
     if (window.confirm('Are you sure you want to delete this user account?')) {
-      setManagedUsers(prev => prev.filter(u => u.id !== userId));
+      if (!functions) return;
+      try {
+        const removeUser = httpsCallable(functions, 'deleteManagedUser');
+        await removeUser({ userId });
+        setManagedUsers((previous) => previous.filter((managedUser) => managedUser.id !== userId));
+      } catch (error) {
+        console.error('Unable to delete user', error);
+        toast.error(error instanceof Error ? error.message : 'User account could not be deleted.');
+      }
     }
   };
 
@@ -200,24 +238,49 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  const toggleUserStatus = (userId: string) => {
-    setManagedUsers(prev => prev.map(u =>
-      u.id === userId ? { ...u, status: u.status === 'suspended' ? 'active' : 'suspended' } : u
-    ));
+  const toggleUserStatus = async (userId: string) => {
+    const target = managedUsers.find((managedUser) => managedUser.id === userId);
+    if (!target || !functions) return;
+    const suspended = target.status !== 'suspended';
+    try {
+      const updateStatus = httpsCallable(functions, 'setManagedUserStatus');
+      await updateStatus({ userId, suspended });
+      setManagedUsers((previous) => previous.map((managedUser) => managedUser.id === userId
+        ? { ...managedUser, status: suspended ? 'suspended' : 'active' }
+        : managedUser));
+    } catch (error) {
+      console.error('Unable to change user status', error);
+      toast.error(error instanceof Error ? error.message : 'User status could not be changed.');
+    }
   };
 
-  const handleInviteSubmit = (e: React.FormEvent) => {
+  const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inviteEmail.trim()) return;
-    setManagedUsers(prev => [...prev, {
-      id: Date.now().toString(),
-      name: inviteName.trim() || inviteEmail.split('@')[0],
-      email: inviteEmail.trim(),
-      role: 'admin',
-      status: 'invited'
-    }]);
-    setInviteEmail('');
-    setInviteName('');
+    if (!inviteEmail.trim() || !functions) return;
+    try {
+      const inviteUser = httpsCallable<
+        { name: string; email: string; role: string },
+        { id: string }
+      >(functions, 'inviteManagedUser');
+      const result = await inviteUser({
+        name: inviteName.trim() || inviteEmail.split('@')[0],
+        email: inviteEmail.trim(),
+        role: inviteRole,
+      });
+      setManagedUsers((previous) => [...previous, {
+        id: result.data.id,
+        name: inviteName.trim() || inviteEmail.split('@')[0],
+        email: inviteEmail.trim(),
+        role: inviteRole,
+        status: 'active',
+      }]);
+      setInviteEmail('');
+      setInviteName('');
+      toast.success('Invitation sent by email.');
+    } catch (error) {
+      console.error('Unable to invite user', error);
+      toast.error(error instanceof Error ? error.message : 'Invitation could not be sent.');
+    }
   };
 
   const handleLogout = () => {
@@ -225,12 +288,12 @@ const AdminDashboard: React.FC = () => {
     navigate('/');
   };
 
-  const handleSendNotification = (e: React.FormEvent) => {
+  const handleSendNotification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!notifTitle.trim() || !notifMessage.trim()) return;
     
     try {
-      addNotification({
+      await addNotification({
         title: notifTitle,
         message: notifMessage,
         type: notifType,
@@ -354,8 +417,7 @@ const AdminDashboard: React.FC = () => {
                   <DollarSign className="h-8 w-8 text-amber-400 mb-3" />
                   <p className="text-slate-400 text-sm">Revenue</p>
                   <p className="text-2xl font-bold text-white mt-1">
-                    ${stats.totalRevenue.toLocaleString()}
-                    <span className="text-sm font-normal text-slate-400 block mt-1">₦{stats.totalRevenueNgn.toLocaleString()}</span>
+                    ₦{stats.totalRevenueNgn.toLocaleString()}
                   </p>
                 </div>
                 <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
@@ -603,8 +665,8 @@ const AdminDashboard: React.FC = () => {
           {activeTab === 'users' && (
             <div className="space-y-6">
               <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-                <h4 className="font-medium text-white mb-3">Invite Admin</h4>
-                <form onSubmit={handleInviteSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <h4 className="font-medium text-white mb-3">Invite User</h4>
+                <form onSubmit={handleInviteSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <input
                     type="text"
                     placeholder="Name (optional)"
@@ -620,6 +682,16 @@ const AdminDashboard: React.FC = () => {
                     required
                     className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-gold"
                   />
+                  <select
+                    value={inviteRole}
+                    onChange={(event) => setInviteRole(event.target.value as ManagedUserRole)}
+                    className="px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
+                  >
+                    <option value="buyer">Buyer</option>
+                    <option value="agent">Agent</option>
+                    <option value="landlord">Landlord</option>
+                    <option value="admin">Admin</option>
+                  </select>
                   <button type="submit" className="px-4 py-2 bg-navy text-white rounded-lg hover:bg-secondary">
                     Send Invite
                   </button>
@@ -719,8 +791,7 @@ const AdminDashboard: React.FC = () => {
                             <td className="px-6 py-4 text-sm font-mono text-slate-300">#{t.id.slice(-8)}</td>
                             <td className="px-6 py-4 text-sm text-white">{prop?.title || 'Unknown'}</td>
                             <td className="px-6 py-4 text-sm font-medium text-white">
-                              ${t.amount.usd.toLocaleString()}
-                              <span className="text-xs text-slate-400 font-normal block mt-1">₦{t.amount.ngn.toLocaleString()}</span>
+                              ₦{t.amount.ngn.toLocaleString()}
                             </td>
                             <td className="px-6 py-4">
                               <span className={`px-2 py-1 text-xs rounded-full ${
@@ -799,14 +870,17 @@ const AdminDashboard: React.FC = () => {
                 <tbody className="divide-y divide-slate-700">
                   {supportTickets.map((t) => (
                     <tr key={t.id} className="hover:bg-slate-700/30">
-                      <td className="px-6 py-4 text-sm font-medium text-white">{t.subject}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-white">
+                        {t.subject}
+                        <span className="block max-w-md truncate text-xs font-normal text-slate-400">{t.message}</span>
+                      </td>
                       <td className="px-6 py-4 text-sm text-slate-400">{t.user}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 text-xs rounded-full ${
                           t.status === 'open' ? 'bg-amber-500/20 text-amber-400' : 'bg-gold/100/20 text-gold'
                         }`}>{t.status}</span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-400">{t.date}</td>
+                      <td className="px-6 py-4 text-sm text-slate-400">{t.date ? new Date(t.date).toLocaleDateString() : '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -912,7 +986,7 @@ const AdminDashboard: React.FC = () => {
                   <label className="block text-sm font-medium text-slate-300 mb-1">Target Audience</label>
                   <select
                     value={notifRole}
-                    onChange={(e) => setNotifRole(e.target.value as any)}
+                    onChange={(e) => setNotifRole(e.target.value as typeof notifRole)}
                     className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-gold"
                   >
                     <option value="all">All Users (Admins & Regular)</option>
@@ -925,7 +999,7 @@ const AdminDashboard: React.FC = () => {
                   <label className="block text-sm font-medium text-slate-300 mb-1">Notification Type</label>
                   <select
                     value={notifType}
-                    onChange={(e) => setNotifType(e.target.value as any)}
+                    onChange={(e) => setNotifType(e.target.value as Notification['type'])}
                     className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-gold"
                   >
                     <option value="system">System Update / Alert</option>
