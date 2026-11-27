@@ -22,16 +22,16 @@ import {
 import SearchFilters from '../components/SearchFilters';
 
 const propertyImages = [
-  { url: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg', alt: 'Modern House', label: 'Modern House' },
-  { url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg', alt: 'Luxury Duplex', label: 'Luxury Duplex' },
-  { url: 'https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg', alt: 'Land for Sale', label: 'Land for Sale' },
-  { url: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg', alt: 'Commercial Shop', label: 'Commercial Shop' },
-  { url: 'https://images.pexels.com/photos/164336/pexels-photo-164336.jpeg', alt: 'Open Green Land', label: 'Open Green Land' },
-  { url: 'https://images.pexels.com/photos/248771/pexels-photo-248771.jpeg', alt: 'Empty Plot', label: 'Empty Plot' },
-  { url: 'https://images.pexels.com/photos/325944/pexels-photo-325944.jpeg', alt: 'Farmland', label: 'Farmland' },
-  { url: 'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg', alt: 'Dry Land', label: 'Dry Land' },
-  { url: 'https://images.pexels.com/photos/264636/pexels-photo-264636.jpeg', alt: 'Shop Front', label: 'Shop Front' },
-  { url: 'https://images.pexels.com/photos/264507/pexels-photo-264507.jpeg', alt: 'Retail Store', label: 'Retail Store' },
+  { url: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg', alt: 'Modern House', label: 'Modern House', title: 'A Better Place to Call Home', description: 'Explore welcoming homes and find the right space for your next chapter.' },
+  { url: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg', alt: 'Luxury Duplex', label: 'Luxury Duplex', title: 'Room to Live a Little Bigger', description: 'Discover elegant homes designed for comfort, family, and everything ahead.' },
+  { url: 'https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg', alt: 'Land for Sale', label: 'Land for Sale', title: 'Build Your Vision from the Ground Up', description: 'Find land with the potential to become your home or your next investment.' },
+  { url: 'https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg', alt: 'Commercial Shop', label: 'Commercial Shop', title: 'Make Space for Your Business', description: 'Explore commercial properties in locations that help your business grow.' },
+  { url: 'https://images.pexels.com/photos/164336/pexels-photo-164336.jpeg', alt: 'Open Green Land', label: 'Open Green Land', title: 'Find Space for What Comes Next', description: 'Discover open land and start planning a place that is truly your own.' },
+  { url: 'https://images.pexels.com/photos/248771/pexels-photo-248771.jpeg', alt: 'Empty Plot', label: 'Empty Plot', title: 'Your Plans Deserve the Perfect Plot', description: 'Browse available plots and take the first step toward building your future.' },
+  { url: 'https://images.pexels.com/photos/325944/pexels-photo-325944.jpeg', alt: 'Farmland', label: 'Farmland', title: 'Grow Your Next Opportunity', description: 'Explore farmland with room for new ideas, steady growth, and lasting value.' },
+  { url: 'https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg', alt: 'Dry Land', label: 'Dry Land', title: 'Invest in Land with Potential', description: 'Find land to match your plans, from a future build to a long-term investment.' },
+  { url: 'https://images.pexels.com/photos/264636/pexels-photo-264636.jpeg', alt: 'Shop Front', label: 'Shop Front', title: 'Put Your Business in the Right Place', description: 'Find a shopfront that helps you welcome customers and reach more people.' },
+  { url: 'https://images.pexels.com/photos/264507/pexels-photo-264507.jpeg', alt: 'Retail Store', label: 'Retail Store', title: 'Discover a Space Ready for Business', description: 'Browse retail spaces and find the right setting for your next big move.' },
 ];
 
 const howItWorksSteps = [
@@ -121,21 +121,21 @@ const HomePage: React.FC = () => {
               className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
             />
           ))}
-          <div className="absolute inset-0 bg-white/5 z-20" />
+          <div className="absolute inset-0 z-20 bg-gradient-to-r from-black/70 via-black/45 to-black/25" />
         </div>
         <button onClick={goToPrev} className="absolute left-4 top-1/2 -translate-y-1/2 z-40 bg-white/90 hover:bg-white rounded-full p-2.5 shadow-xl transition-all hover:scale-110" aria-label="Previous"><span className="text-xl">&#8592;</span></button>
         <button onClick={goToNext} className="absolute right-4 top-1/2 -translate-y-1/2 z-40 bg-white/90 hover:bg-white rounded-full p-2.5 shadow-xl transition-all hover:scale-110" aria-label="Next"><span className="text-xl">&#8594;</span></button>
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-          {propertyImages.slice(0, 6).map((_, idx) => (
-            <button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-2 rounded-full transition-all duration-300 ${idx === currentSlide ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'}`} aria-label={`Slide ${idx + 1}`} />
+          {propertyImages.map((slide, idx) => (
+            <button key={slide.url} onClick={() => setCurrentSlide(idx)} className={`h-2 rounded-full transition-all duration-300 ${idx === currentSlide ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'}`} aria-label={`Go to slide ${idx + 1}: ${slide.label}`} aria-current={idx === currentSlide ? 'true' : undefined} />
           ))}
         </div>
-        <div className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center h-full">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 text-[#14243A] drop-shadow-sm opacity-0 animate-fade-in-up animate-delay-100 animate-fill-both">
-            Find Your Dream Property
+        <div className="relative z-30 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center h-full" aria-live="polite">
+          <h1 key={currentSlide} className="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)] opacity-0 animate-fade-in-up animate-delay-100 animate-fill-both">
+            {propertyImages[currentSlide].title}
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-[#526477] drop-shadow-sm opacity-0 animate-fade-in-up animate-delay-300 animate-fill-both max-w-2xl">
-            Buy, rent, or invest in premium properties across Nigeria
+          <p key={`description-${currentSlide}`} className="text-lg md:text-2xl mb-8 text-white font-medium drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] opacity-0 animate-fade-in-up animate-delay-300 animate-fill-both max-w-2xl">
+            {propertyImages[currentSlide].description}
           </p>
           <div className="max-w-4xl w-full opacity-0 animate-fade-in-up animate-delay-500 animate-fill-both">
             <SearchFilters onSearch={handleSearch} />
@@ -159,7 +159,7 @@ const HomePage: React.FC = () => {
                   className="relative text-center group opacity-0 animate-fade-in-up animate-fill-both"
                   style={{ animationDelay: `${300 + i * 100}ms` }}
                 >
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/15 text-gold mb-4 group-hover:bg-navy group-hover:text-gold transition-all duration-300 group-hover:scale-110">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/15 text-gold mb-4 group-hover:bg-navy group-hover:text-white transition-all duration-300 group-hover:scale-110">
                     <Icon className="h-8 w-8" />
                   </div>
                   <h3 className="text-lg font-semibold text-ink mb-2">{step.title}</h3>
@@ -214,7 +214,7 @@ const HomePage: React.FC = () => {
                   to={`/properties?type=${type.value}`}
                   className="bg-white hover:bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 text-center group border border-transparent hover:border-gold/40 hover:-translate-y-1"
                 >
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gold/15 text-gold group-hover:scale-110 group-hover:bg-navy group-hover:text-gold transition-all duration-300">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gold/15 text-gold group-hover:scale-110 group-hover:bg-navy group-hover:text-white transition-all duration-300">
                     <Icon className="h-7 w-7" />
                   </div>
                   <h3 className="text-lg font-semibold text-ink mt-4">{type.label}</h3>
