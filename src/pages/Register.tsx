@@ -64,8 +64,12 @@ const Register: React.FC = () => {
           from: from 
         } 
       });
-    } catch {
-      setError('Registration failed. Please try again.');
+    } catch (registrationError) {
+      setError(
+        registrationError instanceof Error
+          ? registrationError.message
+          : 'Unable to create your account. Please try again.'
+      );
     }
   };
 
